@@ -7,6 +7,21 @@ use Exception;
 class CurlDownloader implements Downloader
 {
     /**
+     * The cURL handle callbacks.
+     *
+     * @var array
+     */
+    protected $curlHandleCallbacks = [];
+
+    /**
+     * @return void
+     */
+    public function withCurlHandle(callable $callback)
+    {
+        $this->curlHandleCallbacks[] = $callback;
+    }
+
+    /**
      * @inheritdoc
      */
     public function download(string $url, string $directory, string $name = null)
@@ -25,10 +40,13 @@ class CurlDownloader implements Downloader
 
         curl_setopt($ch, CURLOPT_FILE, $stream);
 
+        foreach ($this->curlHandleCallbacks as $callback) {
+            $callback($ch);
+        }
+
         // Timeout if the file doesn't download after 20 seconds.
         // curl_setopt($ch, CURLOPT_TIMEOUT, 20);
 
-        // Execute the request.
         curl_exec($ch);
 
         // If there was an error, throw an Exception
@@ -52,7 +70,7 @@ class CurlDownloader implements Downloader
         }
     }
 
-    private function guessFileName(string $url): string
+    protected function guessFileName(string $url): string
     {
         $position = strrpos($url, '/');
 

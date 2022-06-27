@@ -26,6 +26,9 @@
             "Nevadskiy\\Downloader\\Tests\\": "tests/"
         }
     },
+    "suggest": {
+        "symfony/console": "Required to show downloader progress bar with symfony console commands"
+    },
     "scripts": {
         "test": "phpunit --colors=always"
     }

@@ -26,6 +26,7 @@ class CurlDownloader implements Downloader
 
     /**
      * @inheritdoc
+     * @todo consider changing API to have only 2 args (url and path)
      */
     public function download(string $url, string $directory, string $name = null)
     {

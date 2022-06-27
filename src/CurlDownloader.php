@@ -2,6 +2,9 @@
 
 namespace Nevadskiy\Downloader;
 
+/**
+ * @TODO: add possibility to specify additional cURL options by curl_setopt(). https://www.php.net/manual/en/function.curl-setopt.php
+ */
 class CurlDownloader implements Downloader
 {
     /**

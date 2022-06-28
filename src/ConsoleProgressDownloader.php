@@ -36,7 +36,7 @@ class ConsoleProgressDownloader implements Downloader
      *
      * @return void
      */
-    public function setUpCurl()
+    protected function setUpCurl()
     {
         $this->downloader->withCurlHandle(function ($ch) {
             $progress = $this->output->createProgressBar();
@@ -46,11 +46,11 @@ class ConsoleProgressDownloader implements Downloader
             curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 
             curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function ($ch, $downloadBytes, $downloadedBytes) use ($progress) {
-                if (! $progress->getMaxSteps()) {
+                if ($downloadBytes) {
                     $progress->setMaxSteps($downloadBytes);
                 }
 
-                if ($downloadBytes && $downloadedBytes) {
+                if ($downloadedBytes) {
                     $progress->setProgress($downloadedBytes);
                 }
             });

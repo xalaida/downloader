@@ -1,6 +1,6 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Feature;
+namespace Nevadskiy\Downloader\Tests\Integration;
 
 use Nevadskiy\Downloader\Tests\TestCase;
 use Symfony\Component\Process\Process;
@@ -13,6 +13,7 @@ use Symfony\Component\Process\Process;
  * - [ ] check url to file to stream (without content length)
  * - [ ] add possibility to download or specify headers to access url (authorization, POST method, etc)
  * - [ ] check filesystem path instead of url
+ * - [ ] provide unzip downloader
  */
 class DownloaderTest extends TestCase
 {

@@ -62,8 +62,8 @@ class ConsoleProgressDownloader implements Downloader
     /**
      * @inheritdoc
      */
-    public function download(string $url, string $directory, string $name = null)
+    public function download(string $url, string $path)
     {
-        $this->downloader->download($url, $directory, $name);
+        $this->downloader->download($url, $path);
     }
 }

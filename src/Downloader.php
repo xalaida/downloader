@@ -5,9 +5,9 @@ namespace Nevadskiy\Downloader;
 interface Downloader
 {
     /**
-     * Download a file by the URL to the given directory.
+     * Download a file by the URL to the given path.
      *
      * @return void
      */
-    public function download(string $url, string $directory, string $name = null);
+    public function download(string $url, string $path);
 }

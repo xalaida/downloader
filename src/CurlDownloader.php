@@ -26,13 +26,12 @@ class CurlDownloader implements Downloader
 
     /**
      * @inheritdoc
-     * @todo consider changing API to have only 2 args (url and path)
      */
-    public function download(string $url, string $directory, string $name = null)
+    public function download(string $url, string $path)
     {
         // TODO: validate URL.
 
-        $path = $this->getFilePath($directory, $name ?: $this->guessFileName($url));
+        // TODO: add possibility to use path as directory and automatically define file name.
 
         $stream = new Stream($path);
 

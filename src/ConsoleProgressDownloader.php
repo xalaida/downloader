@@ -2,6 +2,7 @@
 
 namespace Nevadskiy\Downloader;
 
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Style\OutputStyle;
 
 class ConsoleProgressDownloader implements Downloader
@@ -21,6 +22,13 @@ class ConsoleProgressDownloader implements Downloader
     protected $output;
 
     /**
+     * The progress bar instance.
+     *
+     * @var ProgressBar
+     */
+    protected $progress;
+
+    /**
      * Make a new downloader instance.
      */
     public function __construct(CurlDownloader $downloader, OutputStyle $output)
@@ -38,24 +46,16 @@ class ConsoleProgressDownloader implements Downloader
      */
     protected function setUpCurl()
     {
-        $this->downloader->withCurlHandle(function ($ch) {
-            $progress = $this->output->createProgressBar();
+        $this->downloader->withOption(CURLOPT_NOPROGRESS, false);
 
-            $progress->start();
+        $this->downloader->withOption(CURLOPT_PROGRESSFUNCTION, function ($ch, $downloadBytes, $downloadedBytes) {
+            if ($downloadBytes) {
+                $this->progress->setMaxSteps($downloadBytes);
+            }
 
-            curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-
-            curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function ($ch, $downloadBytes, $downloadedBytes) use ($progress) {
-                if ($downloadBytes) {
-                    $progress->setMaxSteps($downloadBytes);
-                }
-
-                if ($downloadedBytes) {
-                    $progress->setProgress($downloadedBytes);
-                }
-            });
-
-            $progress->finish();
+            if ($downloadedBytes) {
+                $this->progress->setProgress($downloadedBytes);
+            }
         });
     }
 
@@ -64,6 +64,12 @@ class ConsoleProgressDownloader implements Downloader
      */
     public function download(string $url, string $path)
     {
+        $this->progress = $this->output->createProgressBar();
+
+        $this->progress->start();
+
         $this->downloader->download($url, $path);
+
+        $this->progress->finish();
     }
 }

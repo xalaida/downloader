@@ -2,17 +2,29 @@
 
 namespace Nevadskiy\Downloader;
 
-/**
- * @TODO: add possibility to specify additional cURL options by curl_setopt(). https://www.php.net/manual/en/function.curl-setopt.php
- */
 class CurlDownloader implements Downloader
 {
+    /**
+     * The cURL options array.
+     *
+     * @var array
+     */
+    protected $options;
+
     /**
      * The cURL handle callbacks.
      *
      * @var array
      */
     protected $curlHandleCallbacks = [];
+
+    /**
+     * Make a new downloader instance.
+     */
+    public function __construct(array $options = [])
+    {
+        $this->options = $options;
+    }
 
     /**
      * Add a cURL handle callback.
@@ -38,6 +50,10 @@ class CurlDownloader implements Downloader
         $ch = curl_init($url);
 
         curl_setopt($ch, CURLOPT_FILE, $stream->getResource());
+
+        foreach ($this->options as $option => $value) {
+            curl_setopt($ch, $option, $value);
+        }
 
         foreach ($this->curlHandleCallbacks as $callback) {
             $callback($ch);

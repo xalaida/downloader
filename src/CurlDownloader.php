@@ -2,6 +2,9 @@
 
 namespace Nevadskiy\Downloader;
 
+/**
+ * @TODO add helper methods for most common cURL options.
+ */
 class CurlDownloader implements Downloader
 {
     /**
@@ -24,6 +27,16 @@ class CurlDownloader implements Downloader
     public function __construct(array $options = [])
     {
         $this->options = $options;
+    }
+
+    /**
+     * Add a cURL option with the given value.
+     *
+     * @return void
+     */
+    public function withOption($option, $value)
+    {
+        $this->options[$option] = $value;
     }
 
     /**

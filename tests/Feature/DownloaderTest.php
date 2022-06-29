@@ -5,6 +5,15 @@ namespace Nevadskiy\Downloader\Tests\Feature;
 use Nevadskiy\Downloader\Tests\TestCase;
 use Symfony\Component\Process\Process;
 
+/**
+ * @TODO
+ * - [ ] check invalid url
+ * - [ ] check url simple html page (not file)
+ * - [ ] check url to directory with files
+ * - [ ] check url to file to stream (without content length)
+ * - [ ] add possibility to download or specify headers to access url (authorization, POST method, etc)
+ * - [ ] check filesystem path instead of url
+ */
 class DownloaderTest extends TestCase
 {
     /**

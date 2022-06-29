@@ -55,11 +55,18 @@ class CurlDownloader implements Downloader
     public function download(string $url, string $path)
     {
         // TODO: validate URL.
+        // TODO: validate path.
 
         // TODO: add possibility to use path as directory and automatically define file name.
 
-        $stream = new Stream($path);
+        $this->write($url, new Stream($path));
+    }
 
+    /**
+     * Write a file by URL to the given stream resource.
+     */
+    protected function write(string $url, Stream $stream)
+    {
         $ch = curl_init($url);
 
         curl_setopt($ch, CURLOPT_FILE, $stream->getResource());
@@ -85,7 +92,7 @@ class CurlDownloader implements Downloader
         $position = strrpos($url, '/');
 
         if ($position === false) {
-            // TODO: provide default file name.
+            // TODO: provide default file name (probably check file mime-type).
         }
 
         return substr($url, $position + 1);

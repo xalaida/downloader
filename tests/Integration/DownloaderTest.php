@@ -9,6 +9,7 @@ use Symfony\Component\Process\Process;
 /**
  * @TODO
  * - [ ] check invalid url
+ * - [ ] test different name from Content-Disposition header
  * - [ ] create directory if missing to store file
  * - [ ] check url simple html page (not file)
  * - [ ] check url to directory with files
@@ -25,10 +26,11 @@ class DownloaderTest extends TestCase
     {
         parent::setUp();
 
-        $this->process = new Process(vsprintf('php -S %s:%s -t %s', [
+        $this->process = new Process(vsprintf('php -S %s:%s -t %s %s', [
             'localhost',
             '8888',
             realpath(__DIR__.'/../Support/Server/File'),
+            'index.php'
         ]));
 
         $this->process->start();
@@ -53,7 +55,7 @@ class DownloaderTest extends TestCase
         $path = $storage.'/hello-world.txt';
 
         $downloader = new CurlDownloader();
-        $downloader->download('http://localhost:8888/', $path);
+        $downloader->download('http://localhost:8888/fixtures/hello-world.txt', $path);
 
         self::assertFileExists($path);
         self::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);

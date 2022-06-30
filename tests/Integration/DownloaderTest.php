@@ -17,6 +17,9 @@ use Symfony\Component\Process\Process;
  * - [ ] add possibility to download or specify headers to access url (authorization, POST method, etc)
  * - [ ] check filesystem path instead of url
  * - [ ] provide unzip downloader
+ *
+ * @TODO
+ * refactor with set up traits: https://dev.to/adamquaile/using-traits-to-organise-phpunit-tests-39g3
  */
 class DownloaderTest extends TestCase
 {

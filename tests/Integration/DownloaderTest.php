@@ -2,12 +2,14 @@
 
 namespace Nevadskiy\Downloader\Tests\Integration;
 
+use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 use Symfony\Component\Process\Process;
 
 /**
  * @TODO
  * - [ ] check invalid url
+ * - [ ] create directory if missing to store file
  * - [ ] check url simple html page (not file)
  * - [ ] check url to directory with files
  * - [ ] check url to file to stream (without content length)
@@ -17,9 +19,6 @@ use Symfony\Component\Process\Process;
  */
 class DownloaderTest extends TestCase
 {
-    /**
-     * @var Process
-     */
     protected $process;
 
     protected function setUp()
@@ -47,23 +46,16 @@ class DownloaderTest extends TestCase
     /** @test */
     public function it_download_files_from_url()
     {
-        $response = $this->get('http://localhost:8888/');
+        $storage = __DIR__.'/../storage';
 
-        var_dump($response);
+        $this->prepareDirectory($storage);
 
-        die;
-    }
+        $path = $storage.'/hello-world.txt';
 
-    protected function get(string $url)
-    {
-        $ch = curl_init();
+        $downloader = new CurlDownloader();
+        $downloader->download('http://localhost:8888/', $path);
 
-        curl_setopt($ch, CURLOPT_URL, $url);
-
-        $response = curl_exec($ch);
-
-        curl_close($ch);
-
-        return $response;
+        self::assertFileExists($path);
+        self::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);
     }
 }

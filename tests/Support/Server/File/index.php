@@ -5,17 +5,32 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Slim\App;
 use Slim\Http\Stream;
 
-require '../../../../vendor/autoload.php';
+// Fix URL path with dots "."
+if (PHP_SAPI === 'cli-server') {
+    $_SERVER['SCRIPT_NAME'] = pathinfo(__FILE__, PATHINFO_BASENAME);
+}
+
+require __DIR__.'/../../../../vendor/autoload.php';
 
 $app = new App;
 
 $app->get('/', function (Request $request, Response $response, array $args) {
-    $path = __DIR__.'/../../../fixtures/hello-world.txt';
+    return $response->getBody()->write('Hi');
+});
 
-    return $response->withBody(new Stream(fopen($path, 'rb')))
-        ->withHeader('Content-Disposition', 'attachment; filename=hello-world.txt;')
-        ->withHeader('Content-Type', mime_content_type($path))
-        ->withHeader('Content-Length', filesize($path));
+$app->get('/fixtures', function (Request $request, Response $response, array $args) {
+    return $response->getBody()->write('Fixtures');
+});
+
+$app->get('/fixtures/{fixture}', function (Request $request, Response $response, array $args) {
+    $filename = $args['fixture'];
+    $fixturesDirectory = __DIR__.'/../../../fixtures';
+    $fixture = $fixturesDirectory.'/'.$filename;
+
+    return $response->withBody(new Stream(fopen($fixture, 'rb')))
+        ->withHeader('Content-Disposition', sprintf('attachment; filename=%s;', $filename))
+        ->withHeader('Content-Type', mime_content_type($fixture))
+        ->withHeader('Content-Length', filesize($fixture));
 });
 
 $app->run();

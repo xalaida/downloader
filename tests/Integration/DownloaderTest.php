@@ -8,11 +8,13 @@ use Symfony\Component\Process\Process;
 
 /**
  * @TODO
- * - [ ] check invalid url
  * - [ ] test different name from Content-Disposition header
  * - [ ] create directory if missing to store file
  * - [ ] check url simple html page (not file)
  * - [ ] check url to directory with files
+ * - [ ] check large files (download using chunk)
+ * - [ ] add possibility to follow redirects
+ * - [ ] check if file already exists (even when it is another file)
  * - [ ] check url to file to stream (without content length)
  * - [ ] add possibility to download or specify headers to access url (authorization, POST method, etc)
  * - [ ] check filesystem path instead of url
@@ -60,5 +62,19 @@ class DownloaderTest extends TestCase
 
         self::assertFileExists($path);
         self::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_throws_exception_for_invalid_url()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/missing-file.txt';
+
+        $downloader = new CurlDownloader();
+        $downloader->download('http://localhost:8888/fixtures/missing-file.txt', $path);
+
+        // TODO: assert error is thrown
+        self::assertFileNotExists($path);
     }
 }

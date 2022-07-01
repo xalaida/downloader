@@ -26,7 +26,18 @@ class CurlDownloader implements Downloader
      */
     public function __construct(array $options = [])
     {
-        $this->options = $options;
+        $this->options = $this->options() + $options;
+    }
+
+    /**
+     * The default cURL options.
+     * @TODO consider filtering reserved options that can break curl downloading configuration.
+     */
+    protected function options(): array
+    {
+        return [
+            CURLOPT_FAILONERROR => true,
+        ];
     }
 
     /**
@@ -59,17 +70,11 @@ class CurlDownloader implements Downloader
 
         // TODO: add possibility to use path as directory and automatically define file name.
 
-        $this->write($url, new Stream($path));
-    }
+        $stream = fopen($path, 'wb+');
 
-    /**
-     * Write a file by URL to the given stream resource.
-     */
-    protected function write(string $url, Stream $stream)
-    {
         $ch = curl_init($url);
 
-        curl_setopt($ch, CURLOPT_FILE, $stream->getResource());
+        curl_setopt($ch, CURLOPT_FILE, $stream);
 
         foreach ($this->options as $option => $value) {
             curl_setopt($ch, $option, $value);
@@ -79,9 +84,18 @@ class CurlDownloader implements Downloader
             $callback($ch);
         }
 
-        curl_exec($ch);
+        $response = curl_exec($ch);
 
         curl_close($ch);
+
+        fclose($stream);
+
+        if (! $response) {
+            // clean up after failed response.
+            unlink($path);
+
+            // TODO: consider also throwing exception with error content
+        }
     }
 
     /**

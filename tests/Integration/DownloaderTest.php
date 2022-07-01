@@ -20,6 +20,7 @@ use Symfony\Component\Process\Process;
  * - [ ] add possibility to download or specify headers to access url (authorization, POST method, etc)
  * - [ ] check filesystem path instead of url
  * - [ ] provide unzip downloader
+ * - [ ] consider writing 'url' driver to league flysystem
  *
  * @TODO
  * refactor with set up traits: https://dev.to/adamquaile/using-traits-to-organise-phpunit-tests-39g3

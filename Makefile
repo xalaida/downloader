@@ -26,15 +26,15 @@ test:
 	docker run --rm -it -v ${PWD}:/app app vendor/bin/phpunit
 
 # Generate a coverage report as html
-coverage-html:
+coverage.html:
 	docker run --rm -it -v ${PWD}:/app app vendor/bin/phpunit --coverage-html tests/report
 
 # Generate a coverage report as text
-coverage-text:
+coverage.text:
 	docker run --rm -it -v ${PWD}:/app app vendor/bin/phpunit --coverage-text
 
 # Coverage text alias
-coverage: coverage-text
+coverage: coverage.text
 
 # Fix the code style
 fix:
@@ -43,4 +43,3 @@ fix:
 # Run PHP server for file fixtures
 server:
 	docker run --rm -it -v ${PWD}:/app --publish 8888:8888 --expose 8888 app php -S 0.0.0.0:8888 -t tests/Support/Server/File index.php
-

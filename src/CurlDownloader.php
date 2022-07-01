@@ -2,6 +2,8 @@
 
 namespace Nevadskiy\Downloader;
 
+use RuntimeException;
+
 /**
  * @TODO add helper methods for most common cURL options.
  */
@@ -86,15 +88,16 @@ class CurlDownloader implements Downloader
 
         $response = curl_exec($ch);
 
+        $error = $this->captureError($ch, $response);
+
         curl_close($ch);
 
         fclose($stream);
 
-        if (! $response) {
-            // clean up after failed response.
+        if ($error) {
             unlink($path);
 
-            // TODO: consider also throwing exception with error content
+            throw new RuntimeException($error);
         }
     }
 
@@ -118,5 +121,20 @@ class CurlDownloader implements Downloader
     protected function getFilePath(string $directory, string $name): string
     {
         return rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . trim($name, DIRECTORY_SEPARATOR);
+    }
+
+    /**
+     * Capture error from the cURL response.
+     *
+     * @param resource $ch
+     * @return string|null
+     */
+    protected function captureError($ch, bool $response)
+    {
+        if ($response) {
+            return null;
+        }
+
+        return curl_error($ch);
     }
 }

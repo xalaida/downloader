@@ -4,6 +4,7 @@ namespace Nevadskiy\Downloader\Tests\Integration;
 
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -72,9 +73,13 @@ class DownloaderTest extends TestCase
         $path = $storage.'/missing-file.txt';
 
         $downloader = new CurlDownloader();
-        $downloader->download('http://localhost:8888/fixtures/missing-file.txt', $path);
 
-        // TODO: assert error is thrown
-        self::assertFileNotExists($path);
+        try {
+            $downloader->download('http://localhost:8888/fixtures/missing-file.txt', $path);
+
+            $this->fail('Expected RuntimeException was not thrown');
+        } catch (RuntimeException $e) {
+            self::assertFileNotExists($path);
+        }
     }
 }

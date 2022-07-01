@@ -7,6 +7,15 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
+    protected function prepareStorageDirectory(): string
+    {
+        $storage = __DIR__.'/storage';
+
+        $this->prepareDirectory($storage);
+
+        return $storage;
+    }
+
     protected function prepareDirectory(string $directory)
     {
         if (is_dir($directory)) {

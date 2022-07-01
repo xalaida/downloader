@@ -49,11 +49,9 @@ class DownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_download_files_from_url()
+    public function it_downloads_files_by_url()
     {
-        $storage = __DIR__.'/../storage';
-
-        $this->prepareDirectory($storage);
+        $storage = $this->prepareStorageDirectory();
 
         $path = $storage.'/hello-world.txt';
 

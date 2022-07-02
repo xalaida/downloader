@@ -81,25 +81,33 @@ class CurlDownloader implements Downloader
 
         $this->ensureFileCanBeWritten($path);
 
-        $error = $this->withFileStream($path, function ($stream) use ($url) {
-            return $this->writeStreamUsingCurl($url, $stream);
-        });
-
-        if ($error) {
-            $this->handleError($error, $path);
-        }
+        $this->performDownload($url, $path);
     }
 
     /**
      * Get a file path by the given path and URL.
      */
-    protected function getPath(string $directory, string $url): string
+    protected function getPath(string $path, string $url): string
     {
-        if (! is_dir($directory)) {
-            return $directory;
+        if (! is_dir($path)) {
+            return $path;
         }
 
-        return $directory . DIRECTORY_SEPARATOR . basename($url);
+        return $path . DIRECTORY_SEPARATOR . basename($url);
+    }
+
+    /**
+     * Get a directory from the given path.
+     */
+    protected function getDirectory(string $path): string
+    {
+        $directory = dirname($path);
+
+        if (! is_dir($directory)) {
+            throw new RuntimeException(sprintf('Directory "%s" does not exists', $directory));
+        }
+
+        return $directory;
     }
 
     /**
@@ -150,6 +158,32 @@ class CurlDownloader implements Downloader
         }
 
         return $stream;
+    }
+
+    /**
+     * Perform the download process.
+     */
+    protected function performDownload(string $url, string $path)
+    {
+        $tempPath = $this->getTempPath($path);
+
+        $error = $this->withFileStream($tempPath, function ($stream) use ($url) {
+            return $this->writeStreamUsingCurl($url, $stream);
+        });
+
+        if ($error) {
+            $this->handleError($error, $tempPath);
+        } else {
+            $this->markAsPermanent($tempPath, $path);
+        }
+    }
+
+    /**
+     * Get a temp file path.
+     */
+    protected function getTempPath(string $path)
+    {
+        return tempnam($this->getDirectory($path), 'tmp_');
     }
 
     /**
@@ -204,5 +238,15 @@ class CurlDownloader implements Downloader
         unlink($path);
 
         throw new RuntimeException($error);
+    }
+
+    /**
+     * Mark a file as permanent.
+     */
+    private function markAsPermanent(string $tempPath, string $path)
+    {
+        @unlink($path);
+
+        rename($tempPath, $path);
     }
 }

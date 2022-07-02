@@ -20,6 +20,7 @@ use Symfony\Component\Process\Process;
  * - [ ] check filesystem path instead of url
  * - [ ] provide unzip downloader
  * - [ ] consider writing 'url' driver to league flysystem
+ * - [ ] add github actions to test using windows filesystem
  *
  * @TODO
  * refactor with set up traits: https://dev.to/adamquaile/using-traits-to-organise-phpunit-tests-39g3
@@ -116,5 +117,59 @@ class DownloaderTest extends TestCase
         } catch (InvalidArgumentException $e) {
             static::assertFileNotExists($path);
         }
+    }
+
+    // TODO: test if path is a remote URL.
+
+    /** @test */
+    public function it_handles_path_to_not_existing_directory()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/files/hello-world.txt';
+
+        $this->expectException(RuntimeException::class);
+
+        $downloader = new CurlDownloader();
+        $downloader->download('http://localhost:8888/fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_throws_exception_when_file_already_exists()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/hello-world.txt';
+
+        file_put_contents($path, 'Old content!');
+
+        $downloader = new CurlDownloader();
+
+        try {
+            $downloader->download('http://localhost:8888/fixtures/hello-world.txt', $path);
+
+            $this->fail('Expected RuntimeException was not thrown');
+        } catch (RuntimeException $e) {
+            static::assertStringEqualsFile($path, 'Old content!');
+        }
+    }
+
+    /** @test */
+    public function it_can_overwrite_a_file_content()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/hello-world.txt';
+
+        file_put_contents($path, 'Old content!');
+
+        $downloader = new CurlDownloader();
+
+        $downloader->overwrite();
+
+        $downloader->download('http://localhost:8888/fixtures/hello-world.txt', $path);
+
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);
     }
 }

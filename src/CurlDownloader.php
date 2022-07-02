@@ -15,7 +15,7 @@ class CurlDownloader implements Downloader
      *
      * @var array
      */
-    protected $options;
+    protected $curlOptions;
 
     /**
      * The cURL handle callbacks.
@@ -25,18 +25,25 @@ class CurlDownloader implements Downloader
     protected $curlHandleCallbacks = [];
 
     /**
+     * Indicates if the downloader should overwrite the content if a file already exists.
+     *
+     * @var bool
+     */
+    protected $overwrite = false;
+
+    /**
      * Make a new downloader instance.
      */
-    public function __construct(array $options = [])
+    public function __construct(array $curlOptions = [])
     {
-        $this->options = $this->options() + $options;
+        $this->curlOptions = $this->curlOptions() + $curlOptions;
     }
 
     /**
      * The default cURL options.
      * @TODO consider filtering reserved options that can break curl downloading configuration.
      */
-    protected function options(): array
+    protected function curlOptions(): array
     {
         return [
             CURLOPT_FAILONERROR => true,
@@ -48,9 +55,9 @@ class CurlDownloader implements Downloader
      *
      * @return void
      */
-    public function withOption($option, $value)
+    public function withCurlOption($option, $value)
     {
-        $this->options[$option] = $value;
+        $this->curlOptions[$option] = $value;
     }
 
     /**
@@ -64,23 +71,37 @@ class CurlDownloader implements Downloader
     }
 
     /**
+     * Overwrite the content if a file already exists.
+     */
+    public function overwrite(bool $overwrite = true)
+    {
+        $this->overwrite = $overwrite;
+    }
+
+    /**
      * @inheritdoc
      */
     public function download(string $url, string $path)
     {
         $this->ensureUrlIsValid($url);
 
-        // TODO: validate path.
-
         // TODO: add possibility to use path as directory and automatically define file name.
 
-        $stream = fopen($path, 'wb+');
+        if (! $this->overwrite && file_exists($path)) {
+            throw new RuntimeException('A file "%" already exists.');
+        }
+
+        $stream = @fopen($path, 'wb+');
+
+        if (! $stream) {
+            throw new RuntimeException(sprintf('Cannot open file %s', $path));
+        }
 
         $ch = curl_init($url);
 
         curl_setopt($ch, CURLOPT_FILE, $stream);
 
-        foreach ($this->options as $option => $value) {
+        foreach ($this->curlOptions as $option => $value) {
             curl_setopt($ch, $option, $value);
         }
 

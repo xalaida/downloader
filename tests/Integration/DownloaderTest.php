@@ -2,6 +2,7 @@
 
 namespace Nevadskiy\Downloader\Tests\Integration;
 
+use DomainException;
 use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
@@ -78,7 +79,7 @@ class DownloaderTest extends TestCase
             $downloader->download('http://localhost:8888/fixtures/wrong-file.txt', $path);
 
             $this->fail('Expected RuntimeException was not thrown');
-        } catch (RuntimeException $e) {
+        } catch (DomainException $e) {
             static::assertFileNotExists($path);
         }
     }

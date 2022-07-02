@@ -90,6 +90,16 @@ class CurlDownloader implements Downloader
     }
 
     /**
+     * Ensure that the given URL is valid.
+     */
+    protected function ensureUrlIsValid(string $url)
+    {
+        if (! filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new InvalidArgumentException('The given URL is invalid.');
+        }
+    }
+
+    /**
      * Get a file path by the given path and URL.
      */
     protected function getPath(string $path, string $url): string
@@ -102,30 +112,6 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Get a directory from the given path.
-     */
-    protected function getDirectory(string $path): string
-    {
-        $directory = dirname($path);
-
-        if (! is_dir($directory)) {
-            throw new RuntimeException(sprintf('Directory "%s" does not exists', $directory));
-        }
-
-        return $directory;
-    }
-
-    /**
-     * Ensure that the given URL is valid.
-     */
-    protected function ensureUrlIsValid(string $url)
-    {
-        if (! filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new InvalidArgumentException('The given URL is invalid.');
-        }
-    }
-
-    /**
      * Ensure that the file can be written by the given path.
      */
     protected function ensureFileCanBeWritten(string $path)
@@ -133,42 +119,6 @@ class CurlDownloader implements Downloader
         if (! $this->overwrite && file_exists($path)) {
             throw new RuntimeException(sprintf('A file "%s" already exists.', $path));
         }
-    }
-
-    /**
-     * Apply a callback to a file stream.
-     */
-    private function withFileStream(string $path, callable $callback)
-    {
-        $stream = $this->openFileStream($path);
-
-        try {
-            $result = $callback($stream);
-
-            fclose($stream);
-
-            return $result;
-        } catch (Exception $e) {
-            fclose($stream);
-
-            throw $e;
-        }
-    }
-
-    /**
-     * Open the file stream.
-     *
-     * @return resource
-     */
-    protected function openFileStream(string $path)
-    {
-        $stream = @fopen($path, 'wb+');
-
-        if (! $stream) {
-            throw new RuntimeException(sprintf('Cannot open file %s', $path));
-        }
-
-        return $stream;
     }
 
     /**
@@ -192,11 +142,17 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Get a temp file path.
+     * Get a directory from the given path.
      */
-    protected function getTempPath(string $path)
+    protected function getDirectory(string $path): string
     {
-        return tempnam($this->getDirectory($path), 'tmp_');
+        $directory = dirname($path);
+
+        if (! is_dir($directory)) {
+            throw new RuntimeException(sprintf('Directory "%s" does not exists', $directory));
+        }
+
+        return $directory;
     }
 
     /**
@@ -221,6 +177,7 @@ class CurlDownloader implements Downloader
 
         $response = curl_exec($ch);
 
+        // TODO: rewrite using get curl error
         $error = $this->captureError($ch, $response);
 
         curl_close($ch);
@@ -245,25 +202,5 @@ class CurlDownloader implements Downloader
         }
 
         return curl_error($ch);
-    }
-
-    /**
-     * Handle the error during downloading.
-     */
-    protected function handleError(string $error, string $path)
-    {
-        unlink($path);
-
-        throw new RuntimeException($error);
-    }
-
-    /**
-     * Mark a file as permanent.
-     */
-    private function markAsPermanent(string $tempPath, string $path)
-    {
-        @unlink($path);
-
-        rename($tempPath, $path);
     }
 }

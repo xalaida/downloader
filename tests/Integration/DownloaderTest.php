@@ -2,6 +2,7 @@
 
 namespace Nevadskiy\Downloader\Tests\Integration;
 
+use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
@@ -67,7 +68,7 @@ class DownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_throws_exception_for_invalid_url()
+    public function it_throws_exception_for_wrong_url_that_returns_http_error()
     {
         $storage = $this->prepareStorageDirectory();
 
@@ -76,10 +77,28 @@ class DownloaderTest extends TestCase
         $downloader = new CurlDownloader();
 
         try {
-            $downloader->download('http://localhost:8888/fixtures/missing-file.txt', $path);
+            $downloader->download('http://localhost:8888/fixtures/wrong-file.txt', $path);
 
             $this->fail('Expected RuntimeException was not thrown');
         } catch (RuntimeException $e) {
+            self::assertFileNotExists($path);
+        }
+    }
+
+    /** @test */
+    public function it_throws_exception_for_invalid_url()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/invalid-url.txt';
+
+        $downloader = new CurlDownloader();
+
+        try {
+            $downloader->download('invalid-url', $path);
+
+            $this->fail('Expected RuntimeException was not thrown');
+        } catch (InvalidArgumentException $e) {
             self::assertFileNotExists($path);
         }
     }

@@ -2,6 +2,7 @@
 
 namespace Nevadskiy\Downloader;
 
+use InvalidArgumentException;
 use RuntimeException;
 
 /**
@@ -67,7 +68,8 @@ class CurlDownloader implements Downloader
      */
     public function download(string $url, string $path)
     {
-        // TODO: validate URL.
+        $this->ensureUrlIsValid($url);
+
         // TODO: validate path.
 
         // TODO: add possibility to use path as directory and automatically define file name.
@@ -136,5 +138,17 @@ class CurlDownloader implements Downloader
         }
 
         return curl_error($ch);
+    }
+
+    /**
+     * Ensure that the given URL is valid.
+     *
+     * @return void
+     */
+    protected function ensureUrlIsValid(string $url)
+    {
+        if (! filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new InvalidArgumentException('The given URL is invalid.');
+        }
     }
 }

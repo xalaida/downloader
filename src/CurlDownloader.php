@@ -79,47 +79,13 @@ class CurlDownloader implements Downloader
 
         $this->ensureFileCanBeWritten($path);
 
-        $stream = $this->openFileStream($path);
-
-        $ch = curl_init($url);
-
-        curl_setopt($ch, CURLOPT_FILE, $stream);
-
-        foreach ($this->curlOptions as $option => $value) {
-            curl_setopt($ch, $option, $value);
-        }
-
-        foreach ($this->curlHandleCallbacks as $callback) {
-            $callback($ch);
-        }
-
-        $response = curl_exec($ch);
-
-        $error = $this->captureError($ch, $response);
-
-        curl_close($ch);
-
-        fclose($stream);
+        $error = $this->withFileStream($path, function ($stream) use ($url) {
+            return $this->writeStreamUsingCurl($url, $stream);
+        });
 
         if ($error) {
             $this->handleError($error, $path);
         }
-    }
-
-    /**
-     * Open the file stream.
-
-     * @return resource
-     */
-    protected function openFileStream(string $path)
-    {
-        $stream = @fopen($path, 'wb+');
-
-        if (! $stream) {
-            throw new RuntimeException(sprintf('Cannot open file %s', $path));
-        }
-
-        return $stream;
     }
 
     /**
@@ -140,6 +106,65 @@ class CurlDownloader implements Downloader
         if (! $this->overwrite && file_exists($path)) {
             throw new RuntimeException('A file "%" already exists.');
         }
+    }
+
+    /**
+     * Apply a callback to a file stream.
+     */
+    private function withFileStream(string $path, callable $callback)
+    {
+        $stream = $this->openFileStream($path);
+
+        $result = $callback($stream);
+
+        fclose($stream);
+
+        return $result;
+    }
+
+    /**
+     * Open the file stream.
+     *
+     * @return resource
+     */
+    protected function openFileStream(string $path)
+    {
+        $stream = @fopen($path, 'wb+');
+
+        if (! $stream) {
+            throw new RuntimeException(sprintf('Cannot open file %s', $path));
+        }
+
+        return $stream;
+    }
+
+    /**
+     * Write a stream using cURL.
+     *
+     * @param resource $stream
+     * @return string|null
+     */
+    private function writeStreamUsingCurl(string $url, $stream)
+    {
+        $ch = curl_init($url);
+
+        curl_setopt($ch, CURLOPT_FILE, $stream);
+
+        foreach ($this->curlOptions as $option => $value) {
+            curl_setopt($ch, $option, $value);
+        }
+
+        foreach ($this->curlHandleCallbacks as $handleCallbacks) {
+            $handleCallbacks($ch);
+        }
+
+        $response = curl_exec($ch);
+
+        $error = $this->captureError($ch, $response);
+
+        curl_close($ch);
+
+        return $error;
     }
 
     /**

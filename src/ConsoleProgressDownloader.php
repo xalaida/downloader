@@ -46,9 +46,9 @@ class ConsoleProgressDownloader implements Downloader
      */
     protected function setUpCurl()
     {
-        $this->downloader->withOption(CURLOPT_NOPROGRESS, false);
+        $this->downloader->withCurlOption(CURLOPT_NOPROGRESS, false);
 
-        $this->downloader->withOption(CURLOPT_PROGRESSFUNCTION, function ($ch, $downloadBytes, $downloadedBytes) {
+        $this->downloader->withCurlOption(CURLOPT_PROGRESSFUNCTION, function ($ch, $downloadBytes, $downloadedBytes) {
             if ($downloadBytes) {
                 $this->progress->setMaxSteps($downloadBytes);
             }

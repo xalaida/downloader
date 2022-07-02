@@ -15,11 +15,7 @@ require __DIR__.'/../../../../vendor/autoload.php';
 $app = new App;
 
 $app->get('/', function (Request $request, Response $response, array $args) {
-    return $response->getBody()->write('Hi');
-});
-
-$app->get('/fixtures', function (Request $request, Response $response, array $args) {
-    return $response->getBody()->write('Fixtures');
+    return $response->getBody()->write('Hello world!');
 });
 
 $app->get('/fixtures/{fixture}', function (Request $request, Response $response, array $args) {

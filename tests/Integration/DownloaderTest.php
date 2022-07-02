@@ -12,8 +12,6 @@ use Symfony\Component\Process\Process;
  * @TODO
  * - [ ] test different name from Content-Disposition header
  * - [ ] create directory if missing to store file
- * - [ ] check url simple html page (not file)
- * - [ ] check url to directory with files
  * - [ ] check large files (download using chunk)
  * - [ ] add possibility to follow redirects
  * - [ ] check if file already exists (even when it is another file)
@@ -25,6 +23,7 @@ use Symfony\Component\Process\Process;
  *
  * @TODO
  * refactor with set up traits: https://dev.to/adamquaile/using-traits-to-organise-phpunit-tests-39g3
+ * add possibility to run server directly from test (`pcntl_fork` api might be useful)
  */
 class DownloaderTest extends TestCase
 {
@@ -63,8 +62,24 @@ class DownloaderTest extends TestCase
         $downloader = new CurlDownloader();
         $downloader->download('http://localhost:8888/fixtures/hello-world.txt', $path);
 
-        self::assertFileExists($path);
-        self::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_downloads_page_by_url()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/hello-world.txt';
+
+        // TODO: try to run server directly from here.
+
+        $downloader = new CurlDownloader();
+        $downloader->download('http://localhost:8888/', $path);
+
+        static::assertFileExists($path);
+        static::assertStringEqualsFile($path, 'Hello world!');
     }
 
     /** @test */
@@ -81,7 +96,7 @@ class DownloaderTest extends TestCase
 
             $this->fail('Expected RuntimeException was not thrown');
         } catch (RuntimeException $e) {
-            self::assertFileNotExists($path);
+            static::assertFileNotExists($path);
         }
     }
 
@@ -99,7 +114,7 @@ class DownloaderTest extends TestCase
 
             $this->fail('Expected RuntimeException was not thrown');
         } catch (InvalidArgumentException $e) {
-            self::assertFileNotExists($path);
+            static::assertFileNotExists($path);
         }
     }
 }

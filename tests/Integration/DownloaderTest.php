@@ -152,4 +152,18 @@ class DownloaderTest extends TestCase
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);
     }
+
+    /** @test */
+    public function it_can_use_directory_as_path_and_determine_file_name_from_url()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $downloader = new CurlDownloader();
+        $downloader->download('http://localhost:8888/fixtures/hello-world.txt', $storage);
+
+        $path = $storage.'/hello-world.txt';
+
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);
+    }
 }

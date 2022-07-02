@@ -77,6 +77,8 @@ class CurlDownloader implements Downloader
     {
         $this->ensureUrlIsValid($url);
 
+        $path = $this->getPath($path, $url);
+
         $this->ensureFileCanBeWritten($path);
 
         $error = $this->withFileStream($path, function ($stream) use ($url) {
@@ -86,6 +88,18 @@ class CurlDownloader implements Downloader
         if ($error) {
             $this->handleError($error, $path);
         }
+    }
+
+    /**
+     * Get a file path by the given path and URL.
+     */
+    protected function getPath(string $directory, string $url): string
+    {
+        if (! is_dir($directory)) {
+            return $directory;
+        }
+
+        return $directory . DIRECTORY_SEPARATOR . basename($url);
     }
 
     /**

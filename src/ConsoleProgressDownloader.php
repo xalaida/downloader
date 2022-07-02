@@ -5,6 +5,9 @@ namespace Nevadskiy\Downloader;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Style\OutputStyle;
 
+/**
+ * TODO: make progress format use human readable format (make it configurable)
+ */
 class ConsoleProgressDownloader implements Downloader
 {
     /**

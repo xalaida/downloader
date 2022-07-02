@@ -104,7 +104,7 @@ class CurlDownloader implements Downloader
     protected function ensureFileCanBeWritten(string $path)
     {
         if (! $this->overwrite && file_exists($path)) {
-            throw new RuntimeException('A file "%" already exists.');
+            throw new RuntimeException(sprintf('A file "%s" already exists.', $path));
         }
     }
 

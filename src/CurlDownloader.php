@@ -79,11 +79,7 @@ class CurlDownloader implements Downloader
 
         $this->ensureFileCanBeWritten($path);
 
-        $stream = @fopen($path, 'wb+');
-
-        if (! $stream) {
-            throw new RuntimeException(sprintf('Cannot open file %s', $path));
-        }
+        $stream = $this->openFileStream($path);
 
         $ch = curl_init($url);
 
@@ -108,6 +104,22 @@ class CurlDownloader implements Downloader
         if ($error) {
             $this->handleError($error, $path);
         }
+    }
+
+    /**
+     * Open the file stream.
+
+     * @return resource
+     */
+    protected function openFileStream(string $path)
+    {
+        $stream = @fopen($path, 'wb+');
+
+        if (! $stream) {
+            throw new RuntimeException(sprintf('Cannot open file %s', $path));
+        }
+
+        return $stream;
     }
 
     /**

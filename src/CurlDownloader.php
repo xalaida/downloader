@@ -5,9 +5,6 @@ namespace Nevadskiy\Downloader;
 use InvalidArgumentException;
 use RuntimeException;
 
-/**
- * @TODO add helper methods for most common cURL options.
- */
 class CurlDownloader implements Downloader
 {
     /**
@@ -41,7 +38,6 @@ class CurlDownloader implements Downloader
 
     /**
      * The default cURL options.
-     * @TODO consider filtering reserved options that can break curl downloading configuration.
      */
     protected function curlOptions(): array
     {
@@ -52,8 +48,6 @@ class CurlDownloader implements Downloader
 
     /**
      * Add a cURL option with the given value.
-     *
-     * @return void
      */
     public function withCurlOption($option, $value)
     {
@@ -62,8 +56,6 @@ class CurlDownloader implements Downloader
 
     /**
      * Add a cURL handle callback.
-     *
-     * @return void
      */
     public function withCurlHandle(callable $callback)
     {
@@ -85,11 +77,7 @@ class CurlDownloader implements Downloader
     {
         $this->ensureUrlIsValid($url);
 
-        // TODO: add possibility to use path as directory and automatically define file name.
-
-        if (! $this->overwrite && file_exists($path)) {
-            throw new RuntimeException('A file "%" already exists.');
-        }
+        $this->ensureFileCanBeWritten($path);
 
         $stream = @fopen($path, 'wb+');
 
@@ -118,32 +106,28 @@ class CurlDownloader implements Downloader
         fclose($stream);
 
         if ($error) {
-            unlink($path);
-
-            throw new RuntimeException($error);
+            $this->handleError($error, $path);
         }
     }
 
     /**
-     * Guess the file name by the given URL.
+     * Ensure that the given URL is valid.
      */
-    protected function guessFileName(string $url): string
+    protected function ensureUrlIsValid(string $url)
     {
-        $position = strrpos($url, '/');
-
-        if ($position === false) {
-            // TODO: provide default file name (probably check file mime-type).
+        if (! filter_var($url, FILTER_VALIDATE_URL)) {
+            throw new InvalidArgumentException('The given URL is invalid.');
         }
-
-        return substr($url, $position + 1);
     }
 
     /**
-     * Get the file path by the given file name and directory.
+     * Ensure that the file can be written by the given path.
      */
-    protected function getFilePath(string $directory, string $name): string
+    protected function ensureFileCanBeWritten(string $path)
     {
-        return rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . trim($name, DIRECTORY_SEPARATOR);
+        if (! $this->overwrite && file_exists($path)) {
+            throw new RuntimeException('A file "%" already exists.');
+        }
     }
 
     /**
@@ -162,14 +146,12 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Ensure that the given URL is valid.
-     *
-     * @return void
+     * Handle the error during downloading.
      */
-    protected function ensureUrlIsValid(string $url)
+    protected function handleError(string $error, string $path)
     {
-        if (! filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new InvalidArgumentException('The given URL is invalid.');
-        }
+        unlink($path);
+
+        throw new RuntimeException($error);
     }
 }

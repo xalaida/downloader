@@ -8,22 +8,6 @@ use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
-/**
- * @TODO
- * - [ ] test different name from Content-Disposition header
- * - [ ] check large files (download using chunk)
- * - [ ] add possibility to follow redirects
- * - [ ] check url to file to stream (without content length)
- * - [ ] add possibility to download or specify headers to access url (authorization, POST method, etc)
- * - [ ] check filesystem path instead of url
- * - [ ] provide unzip downloader
- * - [ ] consider writing 'url' driver to league flysystem
- * - [ ] add github actions to test using windows filesystem
- *
- * @TODO
- * refactor with set up traits: https://dev.to/adamquaile/using-traits-to-organise-phpunit-tests-39g3
- * add possibility to run server directly from test (`pcntl_fork` api might be useful)
- */
 class DownloaderTest extends TestCase
 {
     protected $process;

@@ -11,10 +11,8 @@ use Symfony\Component\Process\Process;
 /**
  * @TODO
  * - [ ] test different name from Content-Disposition header
- * - [ ] create directory if missing to store file
  * - [ ] check large files (download using chunk)
  * - [ ] add possibility to follow redirects
- * - [ ] check if file already exists (even when it is another file)
  * - [ ] check url to file to stream (without content length)
  * - [ ] add possibility to download or specify headers to access url (authorization, POST method, etc)
  * - [ ] check filesystem path instead of url
@@ -118,8 +116,6 @@ class DownloaderTest extends TestCase
             static::assertFileNotExists($path);
         }
     }
-
-    // TODO: test if path is a remote URL.
 
     /** @test */
     public function it_handles_path_to_not_existing_directory()

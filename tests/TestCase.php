@@ -21,7 +21,7 @@ class TestCase extends BaseTestCase
         if (is_dir($directory)) {
             $this->cleanDirectory($directory);
         } else {
-            mkdir($directory, 755, true);
+            mkdir($directory, 0755, true);
         }
     }
 

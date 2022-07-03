@@ -23,7 +23,7 @@ $app->get('/fixtures/{fixture}', function (Request $request, Response $response,
     $fixturesDirectory = __DIR__.'/../../fixtures';
     $fixture = $fixturesDirectory.'/'.$filename;
 
-    return $response->withBody(new Stream(fopen($fixture, 'rb')))
+    return $response->withBody(new Stream(fopen($fixture, 'r')))
         ->withHeader('Content-Disposition', sprintf('attachment; filename=%s;', $filename))
         ->withHeader('Content-Type', mime_content_type($fixture))
         ->withHeader('Content-Length', filesize($fixture));

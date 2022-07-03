@@ -5,6 +5,8 @@ namespace Nevadskiy\Downloader;
 use DomainException;
 use InvalidArgumentException;
 use RuntimeException;
+use function dirname;
+use const DIRECTORY_SEPARATOR;
 
 class CurlDownloader implements Downloader
 {

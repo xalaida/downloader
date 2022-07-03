@@ -78,7 +78,7 @@ class DownloaderTest extends TestCase
         try {
             $downloader->download('http://localhost:8888/fixtures/wrong-file.txt', $path);
 
-            $this->fail('Expected RuntimeException was not thrown');
+            static::fail('Expected RuntimeException was not thrown');
         } catch (DownloadException $e) {
             static::assertFileNotExists($path);
         }
@@ -96,7 +96,7 @@ class DownloaderTest extends TestCase
         try {
             $downloader->download('invalid-url', $path);
 
-            $this->fail('Expected RuntimeException was not thrown');
+            static::fail('Expected RuntimeException was not thrown');
         } catch (InvalidArgumentException $e) {
             static::assertFileNotExists($path);
         }
@@ -129,7 +129,7 @@ class DownloaderTest extends TestCase
         try {
             $downloader->download('http://localhost:8888/fixtures/hello-world.txt', $path);
 
-            $this->fail('Expected RuntimeException was not thrown');
+            static::fail('Expected RuntimeException was not thrown');
         } catch (RuntimeException $e) {
             static::assertStringEqualsFile($path, 'Old content!');
         }

@@ -3,7 +3,6 @@
 namespace Nevadskiy\Downloader;
 
 use DomainException;
-use Exception;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -86,7 +85,19 @@ class CurlDownloader implements Downloader
 
         $this->ensureFileCanBeWritten($path);
 
-        $this->performDownload($url, $path);
+        $tempFile = new TempFile($this->getDirectory($path));
+
+        try {
+            $tempFile->fillUsing(function ($stream) use ($url) {
+                $this->writeStreamUsingCurl($url, $stream);
+            });
+
+            $tempFile->move($path);
+        } catch (DomainException $e) {
+            $tempFile->delete();
+
+            throw $e;
+        }
     }
 
     /**
@@ -122,26 +133,6 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Perform the download process.
-     */
-    protected function performDownload(string $url, string $path)
-    {
-        $tempFile = new TempFile($this->getDirectory($path));
-
-        try {
-            $tempFile->fillUsing(function ($stream) use ($url) {
-                $this->writeStreamUsingCurl($url, $stream);
-            });
-
-            $tempFile->saveAs($path);
-        } catch (DomainException $e) {
-            $tempFile->delete();
-
-            throw $e;
-        }
-    }
-
-    /**
      * Get a directory from the given path.
      */
     protected function getDirectory(string $path): string
@@ -161,7 +152,7 @@ class CurlDownloader implements Downloader
      * @param resource $stream
      * @return string|null
      */
-    private function writeStreamUsingCurl(string $url, $stream)
+    protected function writeStreamUsingCurl(string $url, $stream)
     {
         $ch = curl_init($url);
 

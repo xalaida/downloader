@@ -3,29 +3,33 @@
 namespace Nevadskiy\Downloader;
 
 use Exception;
+use RuntimeException;
 
 class TempFile
 {
     /**
-     * @var string
+     * A path of the file.
+     *
+     * @var string|null
      */
-    private $path;
+    protected $path;
 
+    /**
+     * Make a new temp file instance.
+     */
     public function __construct(string $directory = null)
     {
         $this->path = tempnam($directory ?: sys_get_temp_dir(), 'tmp_');
     }
 
     /**
-     * Create a temp file using the given callback in the given directory.
+     * Get a path of the file.
+     *
+     * @return string|null
      */
-    public static function createUsing(callable $callback, string $directory = null): TempFile
+    public function getPath()
     {
-        $file = new static($directory);
-
-        $file->fillUsing($callback);
-
-        return $file;
+        return $this->path;
     }
 
     /**
@@ -33,6 +37,8 @@ class TempFile
      */
     public function fillUsing(callable $callback)
     {
+        $this->ensureFileExists();
+
         $stream = fopen($this->path, 'wb+');
 
         try {
@@ -48,8 +54,13 @@ class TempFile
         }
     }
 
-    public function saveAs(string $path)
+    /**
+     * Move a file to the given path.
+     */
+    public function move(string $path)
     {
+        $this->ensureFileExists();
+
         @unlink($path);
 
         rename($this->path, $path);
@@ -57,13 +68,23 @@ class TempFile
         $this->path = $path;
     }
 
+    /**
+     * Delete a file.
+     */
     public function delete()
     {
+        $this->ensureFileExists();
+
         unlink($this->path);
     }
 
-    public function getPath()
+    /**
+     * Ensure that the file exists.
+     */
+    protected function ensureFileExists()
     {
-        return $this->path;
+        if (! $this->path) {
+            throw new RuntimeException('File does not exists.');
+        }
     }
 }

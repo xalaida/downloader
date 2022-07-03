@@ -6,9 +6,6 @@ use DomainException;
 use InvalidArgumentException;
 use RuntimeException;
 
-/**
- * TODO: add custom app exceptions
- */
 class CurlDownloader implements Downloader
 {
     /**
@@ -168,8 +165,9 @@ class CurlDownloader implements Downloader
 
         $response = curl_exec($ch);
 
-        // TODO: rewrite using get curl error
-        $error = $this->captureError($ch, $response);
+        var_dump($response);
+
+        $error = curl_error($ch);
 
         curl_close($ch);
 
@@ -177,21 +175,6 @@ class CurlDownloader implements Downloader
             throw new DomainException($error); // TODO: change exception.
         }
 
-        return $error;
-    }
-
-    /**
-     * Capture error from the cURL response.
-     *
-     * @param resource $ch
-     * @return string|null
-     */
-    protected function captureError($ch, bool $response)
-    {
-        if ($response) {
-            return null;
-        }
-
-        return curl_error($ch);
+        return $response;
     }
 }

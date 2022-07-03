@@ -1,4 +1,5 @@
 /.idea
 /vendor
 /tests/storage
+.php_cs.cache
 TODO.md

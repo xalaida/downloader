@@ -104,7 +104,7 @@ class CurlDownloader implements Downloader
     protected function ensureUrlIsValid(string $url)
     {
         if (! filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new InvalidArgumentException(sprintf('The URL "%s" is invalid.', $url));
+            throw new InvalidArgumentException(sprintf('The URL "%s" is invalid', $url));
         }
     }
 
@@ -126,7 +126,7 @@ class CurlDownloader implements Downloader
     protected function ensureFileCanBeWritten(string $path)
     {
         if (! $this->overwrite && file_exists($path)) {
-            throw new RuntimeException(sprintf('The file "%s" already exists.', $path));
+            throw new RuntimeException(sprintf('The file "%s" already exists', $path));
         }
     }
 

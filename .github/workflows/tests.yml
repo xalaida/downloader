@@ -11,8 +11,8 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
-        php: [ '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1' ]
-        prefer: [prefer-lowest, prefer-stable]
+        php: [ '7.0', '7.1' ]
+        prefer: [ prefer-lowest, prefer-stable ]
 
     name: OS ${{ matrix.os }}, PHP ${{ matrix.php }}, ${{ matrix.dependency-version }}
 

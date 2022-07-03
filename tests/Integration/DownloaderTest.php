@@ -20,7 +20,7 @@ class DownloaderTest extends TestCase
         $this->process = new Process(vsprintf('php -S %s:%s -t %s %s', [
             'localhost',
             '8888',
-            realpath(__DIR__.'/../Support/Server/File'),
+            realpath(__DIR__.'/../Support/Server'),
             'index.php'
         ]));
 

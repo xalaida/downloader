@@ -10,7 +10,7 @@ if (PHP_SAPI === 'cli-server') {
     $_SERVER['SCRIPT_NAME'] = pathinfo(__FILE__, PATHINFO_BASENAME);
 }
 
-require __DIR__.'/../../../../vendor/autoload.php';
+require __DIR__.'/../../../vendor/autoload.php';
 
 $app = new App;
 
@@ -20,7 +20,7 @@ $app->get('/', function (Request $request, Response $response, array $args) {
 
 $app->get('/fixtures/{fixture}', function (Request $request, Response $response, array $args) {
     $filename = $args['fixture'];
-    $fixturesDirectory = __DIR__.'/../../../fixtures';
+    $fixturesDirectory = __DIR__.'/../../fixtures';
     $fixture = $fixturesDirectory.'/'.$filename;
 
     return $response->withBody(new Stream(fopen($fixture, 'rb')))

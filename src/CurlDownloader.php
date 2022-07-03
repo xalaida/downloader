@@ -44,6 +44,7 @@ class CurlDownloader implements Downloader
     {
         return [
             CURLOPT_FAILONERROR => true,
+            CURLOPT_FOLLOWLOCATION => true,
         ];
     }
 
@@ -103,7 +104,7 @@ class CurlDownloader implements Downloader
     protected function ensureUrlIsValid(string $url)
     {
         if (! filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new InvalidArgumentException('The given URL is invalid.');
+            throw new InvalidArgumentException(sprintf('The URL "%s" is invalid.', $url));
         }
     }
 
@@ -125,7 +126,7 @@ class CurlDownloader implements Downloader
     protected function ensureFileCanBeWritten(string $path)
     {
         if (! $this->overwrite && file_exists($path)) {
-            throw new RuntimeException(sprintf('A file "%s" already exists.', $path));
+            throw new RuntimeException(sprintf('The file "%s" already exists.', $path));
         }
     }
 
@@ -165,14 +166,12 @@ class CurlDownloader implements Downloader
 
         $response = curl_exec($ch);
 
-        var_dump($response);
-
         $error = curl_error($ch);
 
         curl_close($ch);
 
         if ($error) {
-            throw new DomainException($error); // TODO: change exception.
+            throw new DownloadException($error);
         }
 
         return $response;

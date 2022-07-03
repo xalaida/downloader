@@ -29,4 +29,8 @@ $app->get('/fixtures/{fixture}', function (Request $request, Response $response,
         ->withHeader('Content-Length', filesize($fixture));
 });
 
+$app->get('/redirect/{fixture}', function (Request $request, Response $response, array $args) {
+    return $response->withRedirect(sprintf('/fixtures/%s', $args['fixture']), 301);
+});
+
 $app->run();

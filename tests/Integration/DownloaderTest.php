@@ -2,9 +2,9 @@
 
 namespace Nevadskiy\Downloader\Tests\Integration;
 
-use DomainException;
 use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
+use Nevadskiy\Downloader\DownloadException;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
 use Symfony\Component\Process\Process;
@@ -79,7 +79,7 @@ class DownloaderTest extends TestCase
             $downloader->download('http://localhost:8888/fixtures/wrong-file.txt', $path);
 
             $this->fail('Expected RuntimeException was not thrown');
-        } catch (DomainException $e) {
+        } catch (DownloadException $e) {
             static::assertFileNotExists($path);
         }
     }
@@ -163,6 +163,20 @@ class DownloaderTest extends TestCase
         $downloader->download('http://localhost:8888/fixtures/hello-world.txt', $storage);
 
         $path = $storage.'/hello-world.txt';
+
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_can_download_files_following_redirects_by_url()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/hello-world.txt';
+
+        $downloader = new CurlDownloader();
+        $downloader->download('http://localhost:8888/redirect/hello-world.txt', $path);
 
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../fixtures/hello-world.txt', $path);

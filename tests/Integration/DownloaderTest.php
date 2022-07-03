@@ -11,29 +11,33 @@ use Symfony\Component\Process\Process;
 
 class DownloaderTest extends TestCase
 {
-    protected $process;
+    protected static $process;
 
-    protected function setUp()
+    public static function setUpBeforeClass()
     {
-        parent::setUp();
-
-        $this->process = new Process(vsprintf('php -S %s:%s -t %s %s', [
+        self::$process = new Process(vsprintf('php -S %s:%s -t %s %s', [
             'localhost',
             '8888',
             realpath(__DIR__.'/../Support/Server'),
             'index.php'
         ]));
 
-        $this->process->start();
+        self::$process->disableOutput();
+
+        self::$process->start(function ($type, $buffer) {
+            if (Process::ERR === $type) {
+                echo 'SERVER [ERR] > '.$buffer;
+            } else {
+                echo 'SERVER [OUT] > '.$buffer;
+            }
+        });
 
         usleep(100000);
     }
 
-    protected function tearDown()
+    public static function tearDownAfterClass()
     {
-        parent::tearDown();
-
-        $this->process->stop();
+        self::$process->stop();
     }
 
     /** @test */

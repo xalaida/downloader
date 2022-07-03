@@ -44,8 +44,6 @@ class ConsoleProgressDownloader implements Downloader
 
     /**
      * Set up the cURL handle instance.
-     *
-     * @return void
      */
     protected function setUpCurl()
     {

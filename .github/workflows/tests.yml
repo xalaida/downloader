@@ -12,6 +12,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         php: [ '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1' ]
+        prefer: [prefer-lowest, prefer-stable]
 
     name: OS ${{ matrix.os }}, PHP ${{ matrix.php }}
 
@@ -23,10 +24,11 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: fileinfo
           coverage: pcov
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+        run: composer install --${{ matrix.prefer }} --no-interaction --no-progress
 
       - name: Execute tests
         run: vendor/bin/phpunit --coverage-clover=coverage.xml

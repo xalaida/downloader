@@ -45,6 +45,10 @@ coverage.text:
 # Coverage text alias
 coverage: coverage.text
 
+# Set up ownership for the current user
+own:
+	sudo chown -R "$(shell id -u):$(shell id -g)" .
+
 # Build the server container
 server.build:
 	docker-compose build server

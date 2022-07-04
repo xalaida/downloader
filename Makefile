@@ -1,3 +1,17 @@
+# Start app containers
+up:
+	docker-compose up -d
+
+# Stop app containers
+down:
+	docker-compose down
+
+# Run the testsuite
+test:
+	docker-compose run --rm app vendor/bin/phpunit
+
+## CHECK BELOW
+
 # Install the app
 install: build vendor
 
@@ -20,10 +34,6 @@ composer.outdated:
 # Dump composer autoload
 autoload:
 	docker run --rm -it -v ${PWD}:/app app composer dump-autoload
-
-# Run the testsuite
-test:
-	docker run --rm -it -v ${PWD}:/app app vendor/bin/phpunit
 
 # Generate a coverage report as html
 coverage.html:

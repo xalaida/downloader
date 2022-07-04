@@ -2,6 +2,10 @@
 up:
 	docker-compose up -d
 
+# Build app containers
+build:
+	docker-compose build
+
 # Stop app containers
 down:
 	docker-compose down
@@ -10,46 +14,45 @@ down:
 test:
 	docker-compose run --rm app vendor/bin/phpunit
 
-## CHECK BELOW
-
-# Install the app
-install: build vendor
-
-# Build the app container
-build:
-	docker build -t app .
+# Fix the code style
+fix:
+	docker-compose run --rm app vendor/bin/php-cs-fixer fix
 
 # Install app dependencies
 composer.install:
-	docker run --rm -it -v ${PWD}:/app app composer install
+	docker-compose run --rm app composer install
 
 # Update app dependencies
 composer.update:
-	docker run --rm -it -v ${PWD}:/app app composer update
+	docker-compose run --rm app composer update
 
 # Show outdated dependencies
 composer.outdated:
-	docker run --rm -it -v ${PWD}:/app app composer outdated
+	docker-compose run --rm app composer outdated
 
 # Dump composer autoload
 autoload:
-	docker run --rm -it -v ${PWD}:/app app composer dump-autoload
+	docker-compose run --rm app composer dump-autoload
 
 # Generate a coverage report as html
 coverage.html:
-	docker run --rm -it -v ${PWD}:/app app vendor/bin/phpunit --coverage-html tests/report
+	docker-compose run --rm app vendor/bin/phpunit --coverage-html tests/report
 
 # Generate a coverage report as text
 coverage.text:
-	docker run --rm -it -v ${PWD}:/app app vendor/bin/phpunit --coverage-text
+	docker-compose run --rm app vendor/bin/phpunit --coverage-text
 
 # Coverage text alias
 coverage: coverage.text
 
-# Fix the code style
-fix:
-	docker run --rm -it -v ${PWD}:/app app vendor/bin/php-cs-fixer fix
+# Build the server container
+server.build:
+	docker-compose build server
 
-# Run PHP server for file fixtures
-server:
-	docker run --rm -it -v ${PWD}:/app --publish 8888:8888 --expose 8888 app php -S localhost:8888 -t tests/Server index.php
+# Install composer dependencies in the server container
+server.install:
+	docker-compose run --rm server composer install
+
+# Run the server container
+server.start:
+	docker-compose up server

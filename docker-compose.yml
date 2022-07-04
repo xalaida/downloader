@@ -12,12 +12,12 @@ services:
 
     server:
         build:
-            context: ./
+            context: ./tests/Server
             dockerfile: ./Dockerfile
         volumes:
-            - ./:/app
+            - ./tests/Server:/app
         expose:
             - 8888
         ports:
             - "8888:8888"
-        command: php -S 0.0.0.0:8888 -t /app/tests/Server index.php
+        command: php -S 0.0.0.0:8888 -t /app index.php

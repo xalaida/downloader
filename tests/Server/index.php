@@ -10,7 +10,7 @@ if (PHP_SAPI === 'cli-server') {
     $_SERVER['SCRIPT_NAME'] = pathinfo(__FILE__, PATHINFO_BASENAME);
 }
 
-require __DIR__.'/../../vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
 $app = new App;
 

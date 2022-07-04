@@ -4,8 +4,8 @@ FROM php:7.0-cli
 # Update dependencies
 RUN apt-get update
 
-# Install curl
-RUN apt-get install -y libcurl3-dev curl && docker-php-ext-install curl
+# Install git
+RUN apt-get -y install git
 
 # Install zip
 RUN apt-get install -y libzip-dev zip && docker-php-ext-configure zip --with-libzip && docker-php-ext-install zip

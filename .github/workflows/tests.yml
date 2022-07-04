@@ -26,7 +26,7 @@ jobs:
       - name: Install the server container
         run: docker-compose run --rm server composer install
 
-       - name: Start the server container
+      - name: Start the server container
         run: docker-compose run --rm server php -S 0.0.0.0:8888 -t /app index.php
 
       - name: Setup PHP

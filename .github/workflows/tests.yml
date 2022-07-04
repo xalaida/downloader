@@ -20,6 +20,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Build the server container
+        run: docker-compose build server
+
+      - name: Install the server container
+        run: docker-compose run --rm server composer install
+
+       - name: Start the server container
+        run: docker-compose run --rm server php -S 0.0.0.0:8888 -t /app index.php
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:

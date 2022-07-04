@@ -159,5 +159,6 @@ class DownloaderTest extends TestCase
     private function serverUrl(): string
     {
         return 'http://0.0.0.0:8888';
+        # return 'http://server:8888';
     }
 }

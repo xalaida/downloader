@@ -42,4 +42,4 @@ fix:
 
 # Run PHP server for file fixtures
 server:
-	docker run --rm -it -v ${PWD}:/app --publish 8888:8888 --expose 8888 app php -S 0.0.0.0:8888 -t tests/Support/Server index.php
+	docker run --rm -it -v ${PWD}:/app --publish 8888:8888 --expose 8888 app php -S localhost:8888 -t tests/Server index.php

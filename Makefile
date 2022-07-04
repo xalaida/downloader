@@ -12,7 +12,7 @@ down:
 
 # Run the testsuite
 test:
-	docker-compose run --rm app vendor/bin/phpunit
+	docker-compose run --rm app ./vendor/bin/phpunit
 
 # Fix the code style
 fix:
@@ -60,3 +60,6 @@ server.install:
 # Run the server container
 server.start:
 	docker-compose up server
+
+# Install and start the testing server
+server: server.build server.install server.start

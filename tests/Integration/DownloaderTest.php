@@ -21,7 +21,7 @@ class DownloaderTest extends TestCase
         $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $path);
 
         static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../Server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
 
     /** @test */
@@ -29,15 +29,13 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/hello-world.txt';
-
-        // TODO: try to run server directly from here.
+        $path = $storage.'/home.txt';
 
         $downloader = new CurlDownloader();
         $downloader->download($this->serverUrl().'/', $path);
 
         static::assertFileExists($path);
-        static::assertStringEqualsFile($path, 'Hello world!');
+        static::assertStringEqualsFile($path, 'Welcome home!');
     }
 
     /** @test */
@@ -125,7 +123,7 @@ class DownloaderTest extends TestCase
         $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $path);
 
         static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../Server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
 
     /** @test */
@@ -139,7 +137,7 @@ class DownloaderTest extends TestCase
         $path = $storage.'/hello-world.txt';
 
         static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../Server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
 
     /** @test */
@@ -153,12 +151,11 @@ class DownloaderTest extends TestCase
         $downloader->download($this->serverUrl().'/redirect/hello-world.txt', $path);
 
         static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../Server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
 
     private function serverUrl(): string
     {
-        return 'http://0.0.0.0:8888';
-        # return 'http://server:8888';
+        return 'http://server:8888';
     }
 }

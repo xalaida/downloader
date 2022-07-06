@@ -5,6 +5,8 @@ services:
         build:
             context: ./
             dockerfile: ./Dockerfile
+        environment:
+            - TESTING_SERVER_URL=http://server:8888
         volumes:
             - ./:/app
         links:

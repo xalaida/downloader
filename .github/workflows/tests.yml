@@ -35,7 +35,7 @@ jobs:
           node-version: '16.x'
 
       - name: Start testing server
-        run: node tests/server/index.js
+        run: node tests/server/index.js &
 
       - name: Execute tests
         run: vendor/bin/phpunit --coverage-clover=coverage.xml

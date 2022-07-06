@@ -19,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup PHP
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -28,6 +28,14 @@ jobs:
 
       - name: Install dependencies
         run: composer update --${{ matrix.dependency-version }} --no-interaction --no-progress --prefer-source
+
+      - name: Set up Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+
+      - name: Start testing server
+        run: node tests/server/index.js
 
       - name: Execute tests
         run: vendor/bin/phpunit --coverage-clover=coverage.xml

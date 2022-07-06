@@ -33,9 +33,9 @@ class TempFile
     }
 
     /**
-     * Fill temp file using the given callback.
+     * Write temp file using the given callback.
      */
-    public function fillUsing(callable $callback)
+    public function writeUsing(callable $callback)
     {
         $this->ensureFileExists();
 
@@ -84,7 +84,7 @@ class TempFile
     protected function ensureFileExists()
     {
         if (! $this->path) {
-            throw new RuntimeException('File does not exists.');
+            throw new RuntimeException('File does not exists');
         }
     }
 }

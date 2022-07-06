@@ -88,7 +88,7 @@ class CurlDownloader implements Downloader
         $tempFile = new TempFile($this->getDirectory($path));
 
         try {
-            $tempFile->fillUsing(function ($stream) use ($url) {
+            $tempFile->writeUsing(function ($stream) use ($url) {
                 $this->writeStreamUsingCurl($url, $stream);
             });
 

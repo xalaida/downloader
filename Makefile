@@ -1,14 +1,18 @@
-# Start app containers
+# Start docker containers
 up:
 	docker-compose up -d
 
-# Build app containers
+# Stop docker containers
+down:
+	docker-compose down
+
+# Build docker containers
 build:
 	docker-compose build
 
-# Stop app containers
-down:
-	docker-compose down
+# Show status of docker containers
+ps:
+	docker-compose ps
 
 # Run the testsuite
 test:
@@ -49,17 +53,6 @@ coverage: coverage.text
 own:
 	sudo chown -R "$(shell id -u):$(shell id -g)" .
 
-# Build the server container
-server.build:
-	docker-compose build server
-
-# Install composer dependencies in the server container
-server.install:
-	docker-compose run --rm server composer install
-
-# Run the server container
-server.start:
-	docker-compose up server
-
-# Install and start the testing server
-server: server.build server.install server.start
+# Run the testing server
+server:
+	docker-compose up -d server

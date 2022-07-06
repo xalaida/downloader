@@ -156,6 +156,6 @@ class DownloaderTest extends TestCase
 
     private function serverUrl(): string
     {
-        return $_ENV['TESTING_SERVER_URL'] ?: 'http://127.0.0.1:8888';
+        return $_ENV['TESTING_SERVER_URL'] ?? 'http://127.0.0.1:8888';
     }
 }

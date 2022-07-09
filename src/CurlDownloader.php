@@ -2,7 +2,6 @@
 
 namespace Nevadskiy\Downloader;
 
-use DomainException;
 use InvalidArgumentException;
 use RuntimeException;
 use function dirname;
@@ -119,7 +118,15 @@ class CurlDownloader implements Downloader
             return $path;
         }
 
-        return $path . DIRECTORY_SEPARATOR . basename($url);
+        return $path . DIRECTORY_SEPARATOR . $this->getFileNameFromUrl($url);
+    }
+
+    /**
+     * Get a file name from the given URL.
+     */
+    protected function getFileNameFromUrl(string $url): string
+    {
+        return basename($url);
     }
 
     /**

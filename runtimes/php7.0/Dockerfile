@@ -9,7 +9,10 @@ RUN apt-get update \
 # Install Zip
     && apt-get install -y libzip-dev zip \
     && docker-php-ext-configure zip --with-libzip \
-    && docker-php-ext-install zip
+    && docker-php-ext-install zip \
+# Install Xdebug
+    && pecl install xdebug-2.5.0 \
+    && docker-php-ext-enable xdebug
 
 # Install composer
 ENV COMPOSER_ALLOW_SUPERUSER 1

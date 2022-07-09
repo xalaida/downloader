@@ -43,16 +43,14 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/missing-file.txt';
-
         $downloader = new CurlDownloader();
 
         try {
-            $downloader->download($this->serverUrl().'/fixtures/wrong-file.txt', $path);
+            $downloader->download($this->serverUrl().'/fixtures/wrong-file.txt', $storage.'/missing-file.txt');
 
-            static::fail('Expected RuntimeException was not thrown');
+            static::fail('Expected DownloadException was not thrown');
         } catch (DownloadException $e) {
-            static::assertFileNotExists($path);
+            static::assertDirectoryIsEmpty($storage);
         }
     }
 

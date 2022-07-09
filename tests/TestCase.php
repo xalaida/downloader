@@ -3,6 +3,7 @@
 namespace Nevadskiy\Downloader\Tests;
 
 use FilesystemIterator;
+use Nevadskiy\Downloader\Tests\Constraint\DirectoryIsEmpty;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
@@ -44,5 +45,15 @@ class TestCase extends BaseTestCase
         if (! $preserve) {
             @rmdir($directory);
         }
+    }
+
+    /**
+     * Asserts that a directory is empty.
+     */
+    public static function assertDirectoryIsEmpty(string $directory, string $message = '')
+    {
+        static::assertDirectoryExists($directory);
+
+        static::assertThat($directory, new DirectoryIsEmpty(), $message);
     }
 }

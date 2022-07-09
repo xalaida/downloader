@@ -93,7 +93,7 @@ class CurlDownloader implements Downloader
             });
 
             $tempFile->move($path);
-        } catch (DomainException $e) {
+        } catch (DownloadException $e) {
             $tempFile->delete();
 
             throw $e;

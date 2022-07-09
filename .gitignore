@@ -1,5 +1,6 @@
 /.idea
 /vendor
 /tests/storage
+composer.lock
 .php_cs.cache
 TODO.md

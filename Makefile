@@ -10,6 +10,10 @@ down:
 build:
 	docker-compose build
 
+# Restart docker containers
+restart:
+	docker-compose restart
+
 # Show status of docker containers
 ps:
 	docker-compose ps

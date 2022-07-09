@@ -15,7 +15,7 @@ class CurlDownloader implements Downloader
      *
      * @var array
      */
-    protected $curlOptions;
+    protected $curlOptions = [];
 
     /**
      * The cURL handle callbacks.

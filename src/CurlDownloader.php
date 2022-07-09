@@ -92,7 +92,7 @@ class CurlDownloader implements Downloader
             });
 
             $tempFile->move($path);
-        } catch (DownloadException $e) {
+        } catch (DownloaderException $e) {
             $tempFile->delete();
 
             throw $e;
@@ -180,7 +180,7 @@ class CurlDownloader implements Downloader
         curl_close($ch);
 
         if ($error) {
-            throw new DownloadException($error);
+            throw new DownloaderException($error);
         }
 
         return $response;

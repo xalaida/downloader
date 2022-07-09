@@ -4,7 +4,7 @@ namespace Nevadskiy\Downloader\Tests\Integration;
 
 use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\DownloadException;
+use Nevadskiy\Downloader\DownloaderException;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
 
@@ -48,8 +48,8 @@ class DownloaderTest extends TestCase
         try {
             $downloader->download($this->serverUrl().'/fixtures/wrong-file.txt', $storage.'/missing-file.txt');
 
-            static::fail('Expected DownloadException was not thrown');
-        } catch (DownloadException $e) {
+            static::fail('Expected DownloaderException was not thrown');
+        } catch (DownloaderException $e) {
             static::assertDirectoryIsEmpty($storage);
         }
     }

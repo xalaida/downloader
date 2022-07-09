@@ -4,7 +4,7 @@ namespace Nevadskiy\Downloader;
 
 use RuntimeException;
 
-class DownloadException extends RuntimeException
+class DownloaderException extends RuntimeException
 {
 
 }

@@ -151,4 +151,62 @@ class DownloaderTest extends TestCase
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
+
+    /** @test */
+    public function it_allows_to_specify_callbacks_on_curl_handle_instance()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $url = $this->serverUrl().'/redirect/hello-world.txt';
+        $path = $storage.'/hello-world.txt';
+
+        $downloader = new CurlDownloader();
+
+        $downloader->withCurlHandle(function ($ch) use ($url) {
+            static::assertEquals($url, curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
+        });
+
+        $downloader->download($url, $path);
+
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_allows_to_specify_curl_options()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/hello-world.txt';
+
+        $downloader = new CurlDownloader();
+
+        $downloader->withCurlOption(CURLOPT_HTTPHEADER, [
+            sprintf('Authorization: Basic %s', base64_encode('client:secret')),
+        ]);
+
+        $downloader->download($this->serverUrl().'/private/hello-world.txt', $path);
+
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_allows_to_specify_headers()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $path = $storage.'/hello-world.txt';
+
+        $downloader = new CurlDownloader();
+
+        $downloader->withHeaders([
+            'Authorization' => sprintf('Basic %s', base64_encode('client:secret')),
+        ]);
+
+        $downloader->download($this->serverUrl().'/private/hello-world.txt', $path);
+
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+    }
 }

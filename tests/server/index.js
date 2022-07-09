@@ -18,6 +18,14 @@ http.createServer(function (req, res) {
             res.writeHead(200);
             res.end(data);
         });
+    } else if (req.url.startsWith('/private')) {
+        if (req.headers.authorization === `Basic ${btoa('client:secret')}`) {
+            res.writeHead(301, { 'Location': req.url.replace('/private', '/fixtures') });
+            res.end();
+        } else {
+            res.writeHead(403);
+            res.end();
+        }
     } else {
         res.writeHead(404);
         res.end();

@@ -66,6 +66,20 @@ class CurlDownloader implements Downloader
     }
 
     /**
+     * Add headers to the cURL request.
+     */
+    public function withHeaders(array $headers)
+    {
+        $curlHeaders = [];
+
+        foreach ($headers as $name => $value) {
+            $curlHeaders[] = is_int($name) ? $value : "$name: $value";
+        }
+
+        $this->withCurlOption(CURLOPT_HTTPHEADER, $curlHeaders);
+    }
+
+    /**
      * Overwrite the content if a file already exists.
      */
     public function overwrite(bool $overwrite = true)
@@ -175,7 +189,9 @@ class CurlDownloader implements Downloader
 
         $response = curl_exec($ch);
 
-        $error = curl_error($ch);
+        $error = $response === false
+            ? curl_error($ch)
+            : null;
 
         curl_close($ch);
 

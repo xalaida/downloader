@@ -2,13 +2,14 @@
 FROM php:7.0-cli
 
 # Update dependencies
-RUN apt-get update
-
-# Install curl
-RUN apt-get install -y libcurl3-dev curl && docker-php-ext-install curl
-
-# Install zip
-RUN apt-get install -y libzip-dev zip && docker-php-ext-configure zip --with-libzip && docker-php-ext-install zip
+RUN apt-get update \
+# Install Curl
+    && apt-get install -y libcurl3-dev curl \
+    && docker-php-ext-install curl \
+# Install Zip
+    && apt-get install -y libzip-dev zip \
+    && docker-php-ext-configure zip --with-libzip \
+    && docker-php-ext-install zip
 
 # Install composer
 ENV COMPOSER_ALLOW_SUPERUSER 1

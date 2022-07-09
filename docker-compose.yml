@@ -1,21 +1,10 @@
 version: '3.8'
 
 services:
-    php7:
+    app:
         build:
             context: ./
-            dockerfile: ./runtimes/php7/Dockerfile
-        environment:
-            - TESTING_SERVER_URL=http://server:8888
-        volumes:
-            - ./:/app
-        links:
-            - server
-
-    php8:
-        build:
-            context: ./
-            dockerfile: ./runtimes/php8/Dockerfile
+            dockerfile: ./runtimes/${APP_DOCKER_RUNTIME}/Dockerfile
         environment:
             - TESTING_SERVER_URL=http://server:8888
         volumes:

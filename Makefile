@@ -16,35 +16,35 @@ ps:
 
 # Run the testsuite
 test:
-	docker-compose run --rm php7 vendor/bin/phpunit
+	docker-compose run --rm app vendor/bin/phpunit
 
 # Fix the code style
 fix:
-	docker-compose run --rm php7 vendor/bin/php-cs-fixer fix
+	docker-compose run --rm app vendor/bin/php-cs-fixer fix
 
 # Install app dependencies
 composer.install:
-	docker-compose run --rm php7 composer install
+	docker-compose run --rm app composer install
 
 # Update app dependencies
 composer.update:
-	docker-compose run --rm php7 composer update
+	docker-compose run --rm app composer update
 
 # Show outdated dependencies
 composer.outdated:
-	docker-compose run --rm php7 composer outdated
+	docker-compose run --rm app composer outdated
 
 # Dump composer autoload
 autoload:
-	docker-compose run --rm php7 composer dump-autoload
+	docker-compose run --rm app composer dump-autoload
 
 # Generate a coverage report as html
 coverage.html:
-	docker-compose run --rm php7 vendor/bin/phpunit --coverage-html tests/report
+	docker-compose run --rm app vendor/bin/phpunit --coverage-html tests/report
 
 # Generate a coverage report as text
 coverage.text:
-	docker-compose run --rm php7 vendor/bin/phpunit --coverage-text
+	docker-compose run --rm app vendor/bin/phpunit --coverage-text
 
 # Coverage text alias
 coverage: coverage.text

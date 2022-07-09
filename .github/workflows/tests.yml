@@ -27,7 +27,7 @@ jobs:
           coverage: pcov
 
       - name: Install dependencies
-        run: composer update --${{ matrix.dependency-version }} --no-interaction --no-progress --prefer-source
+        run: composer update --no-interaction --no-progress
 
       - name: Set up Node
         uses: actions/setup-node@v1

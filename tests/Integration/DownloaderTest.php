@@ -151,9 +151,4 @@ class DownloaderTest extends TestCase
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
-
-    private function serverUrl(): string
-    {
-        return $_ENV['TESTING_SERVER_URL'] ?? 'http://127.0.0.1:8888';
-    }
 }

@@ -1,6 +1,7 @@
 /.idea
 /vendor
 /tests/storage
+/tests/report
 .env
 composer.lock
 .php_cs.cache

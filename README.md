@@ -13,6 +13,14 @@ Download files using PHP and Curl.
 
 - PHP 7.0 or newer
 
+## 🔌 Installation
+
+Install the package via composer.
+
+```bash
+composer require nevadskiy/downloader
+````
+
 ## 🔨 Usage
 
 #### Downloading file by URL to the specified path

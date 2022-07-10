@@ -3,7 +3,7 @@
 [![Stand With Ukraine](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner-direct-single.svg)](https://stand-with-ukraine.pp.ua)
 
 [![Latest Stable Version](https://poser.pugx.org/nevadskiy/downloader/v)](https://packagist.org/packages/nevadskiy/downloader)
-[![Tests](https://github.com/nevadskiy/downloader/workflows/tests/badge.svg)](https://packagist.org/packages/nevadskiy/downloader)
+[![Tests](https://img.shields.io/github/workflow/status/nevadskiy/downloader/Tests?label=tests)](https://packagist.org/packages/nevadskiy/downloader)
 [![Code Coverage](https://codecov.io/gh/nevadskiy/downloader/branch/master/graphs/badge.svg?branch=master)](https://packagist.org/packages/nevadskiy/downloader)
 [![License](https://poser.pugx.org/nevadskiy/downloader/license)](https://packagist.org/packages/nevadskiy/downloader)
 

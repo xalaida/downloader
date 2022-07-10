@@ -201,4 +201,18 @@ class TempFileTest extends TestCase
 
         $file->delete();
     }
+
+    /** @test */
+    public function it_cannot_be_saved_when_path_is_directory()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $file = new TempFile();
+
+        $file->write('Hello, world!');
+
+        $this->expectException(RuntimeException::class);
+
+        $file->save($storage);
+    }
 }

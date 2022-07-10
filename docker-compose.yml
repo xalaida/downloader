@@ -1,23 +1,23 @@
 version: '3.8'
 
 services:
-    app:
-        build:
-            context: ./
-            dockerfile: ./runtimes/${APP_DOCKER_RUNTIME:-php7.0}/Dockerfile
-        environment:
-            - TESTING_SERVER_URL=http://server:8888
-        volumes:
-            - ./:/app
-        links:
-            - server
+  app:
+    build:
+      context: ./
+      dockerfile: ./runtimes/${APP_DOCKER_RUNTIME:-php7.0}/Dockerfile
+    environment:
+      - TESTING_SERVER_URL=http://server:8888
+    volumes:
+      - ./:/app
+    links:
+      - server
 
-    server:
-        image: node:16-alpine
-        volumes:
-            - ./:/app
-        expose:
-            - 8888
-        ports:
-            - "8888:8888"
-        command: node /app/tests/server/index.js
+  server:
+    image: node:16-alpine
+    volumes:
+      - ./:/app
+    expose:
+      - 8888
+    ports:
+      - "8888:8888"
+    command: node /app/tests/server/index.js

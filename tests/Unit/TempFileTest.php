@@ -5,6 +5,7 @@ namespace Nevadskiy\Downloader\Tests\Integration;
 use Nevadskiy\Downloader\TempFile;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
+use function dirname;
 
 class TempFileTest extends TestCase
 {
@@ -15,11 +16,11 @@ class TempFileTest extends TestCase
 
         $path = $file->getPath();
 
-        self::assertFileExists($path);
+        static::assertFileExists($path);
 
         $file->delete();
 
-        self::assertFileNotExists($path);
+        static::assertFileNotExists($path);
     }
 
     /** @test */
@@ -29,11 +30,11 @@ class TempFileTest extends TestCase
 
         $path = $file->getPath();
 
-        self::assertFileExists($path);
+        static::assertFileExists($path);
 
         unset($file);
 
-        self::assertFileNotExists($path);
+        static::assertFileNotExists($path);
     }
 
     /** @test */
@@ -43,11 +44,11 @@ class TempFileTest extends TestCase
 
         $path = $file->getPath();
 
-        self::assertFileExists($path);
+        static::assertFileExists($path);
 
         $file->delete();
 
-        self::assertFileNotExists($path);
+        static::assertFileNotExists($path);
 
         $this->expectException(RuntimeException::class);
 
@@ -59,8 +60,8 @@ class TempFileTest extends TestCase
     {
         $file = new TempFile();
 
-        self::assertFileExists($file->getPath());
-        self::assertEquals(sys_get_temp_dir(), dirname($file->getPath()));
+        static::assertFileExists($file->getPath());
+        static::assertSame(sys_get_temp_dir(), dirname($file->getPath()));
 
         $file->delete();
     }
@@ -72,8 +73,8 @@ class TempFileTest extends TestCase
 
         $file = new TempFile($storage);
 
-        self::assertFileExists($file->getPath());
-        self::assertEquals($storage, dirname($file->getPath()));
+        static::assertFileExists($file->getPath());
+        static::assertSame($storage, dirname($file->getPath()));
 
         $file->delete();
     }
@@ -90,7 +91,7 @@ class TempFileTest extends TestCase
 
             static::fail('Temp file created in non-existent directory');
         } catch (RuntimeException $e) {
-            self::assertDirectoryNotExists($directory);
+            static::assertDirectoryNotExists($directory);
         }
     }
 
@@ -101,7 +102,7 @@ class TempFileTest extends TestCase
 
         $file->write('Hello, world!');
 
-        self::assertStringEqualsFile($file->getPath(), 'Hello, world!');
+        static::assertStringEqualsFile($file->getPath(), 'Hello, world!');
 
         $file->delete();
     }
@@ -118,13 +119,13 @@ class TempFileTest extends TestCase
         $path = $storage.'/hello-world.txt';
         $tempPath = $file->getPath();
 
-        self::assertStringEqualsFile($tempPath, 'Hello, world!');
-        self::assertFileNotExists($path);
+        static::assertStringEqualsFile($tempPath, 'Hello, world!');
+        static::assertFileNotExists($path);
 
         $file->save($path);
 
-        self::assertStringEqualsFile($path, 'Hello, world!');
-        self::assertFileNotExists($tempPath);
+        static::assertStringEqualsFile($path, 'Hello, world!');
+        static::assertFileNotExists($tempPath);
     }
 
     /** @test */
@@ -143,8 +144,8 @@ class TempFileTest extends TestCase
 
             static::fail('TempFile was saved multiple times');
         } catch (RuntimeException $e) {
-            self::assertFileNotExists($storage.'/hello-world-2.txt');
-            self::assertStringEqualsFile($storage.'/hello-world.txt', 'Hello, world!');
+            static::assertFileNotExists($storage.'/hello-world-2.txt');
+            static::assertStringEqualsFile($storage.'/hello-world.txt', 'Hello, world!');
         }
     }
 
@@ -164,7 +165,7 @@ class TempFileTest extends TestCase
 
             static::fail('File was saved to non-existent directory');
         } catch (RuntimeException $e) {
-            self::assertFileNotExists($path);
+            static::assertFileNotExists($path);
         }
     }
 
@@ -183,7 +184,7 @@ class TempFileTest extends TestCase
 
         $file->save($path);
 
-        self::assertStringEqualsFile($path, 'Hello, world!');
+        static::assertStringEqualsFile($path, 'Hello, world!');
     }
 
     /** @test */
@@ -193,7 +194,7 @@ class TempFileTest extends TestCase
 
         $path = $file->getPath();
 
-        self::assertFileExists($path);
+        static::assertFileExists($path);
 
         unlink($path);
 

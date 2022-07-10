@@ -4,6 +4,7 @@ namespace Nevadskiy\Downloader\Tests\Constraint;
 
 use FilesystemIterator;
 use PHPUnit\Framework\Constraint\Constraint;
+use function sprintf;
 
 class DirectoryIsEmpty extends Constraint
 {
@@ -22,7 +23,7 @@ class DirectoryIsEmpty extends Constraint
      */
     protected function failureDescription($other): string
     {
-        return \sprintf('directory "%s" is empty', $other);
+        return sprintf('directory "%s" is empty', $other);
     }
 
     /**

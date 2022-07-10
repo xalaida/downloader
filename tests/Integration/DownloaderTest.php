@@ -163,7 +163,7 @@ class DownloaderTest extends TestCase
         $downloader = new CurlDownloader();
 
         $downloader->withCurlHandle(function ($ch) use ($url) {
-            static::assertEquals($url, curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
+            static::assertSame($url, curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
         });
 
         $downloader->download($url, $path);

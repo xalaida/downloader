@@ -6,6 +6,7 @@ use InvalidArgumentException;
 use RuntimeException;
 use function dirname;
 use const DIRECTORY_SEPARATOR;
+use function is_int;
 
 class CurlDownloader implements Downloader
 {

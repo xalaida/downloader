@@ -22,7 +22,36 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: fileinfo
-          coverage: pcov
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --no-interaction --no-progress
+
+      - name: Set up Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+
+      - name: Start testing server
+        run: node tests/server/index.js &
+
+      - name: Execute tests
+        run: vendor/bin/phpunit
+
+  coverage:
+    name: Code coverage
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.0
+          coverage: xdebug
 
       - name: Install dependencies
         run: composer update --no-interaction --no-progress

@@ -26,6 +26,10 @@ test:
 fix:
 	docker-compose run --rm app vendor/bin/php-cs-fixer fix
 
+# Check the code style
+check:
+	docker-compose run --rm app vendor/bin/php-cs-fixer fix --dry-run --diff-format udiff
+
 # Install app dependencies
 composer.install:
 	docker-compose run --rm app composer install

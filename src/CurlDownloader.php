@@ -73,7 +73,7 @@ class CurlDownloader implements Downloader
         $curlHeaders = [];
 
         foreach ($headers as $name => $value) {
-            $curlHeaders[] = is_int($name) ? $value : "$name: $value";
+            $curlHeaders[] = is_int($name) ? $value : "{$name}: {$value}";
         }
 
         $this->withCurlOption(CURLOPT_HTTPHEADER, $curlHeaders);

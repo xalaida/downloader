@@ -32,7 +32,7 @@ $downloader = new CurlDownloader();
 $downloader->download('https://example.com/files/books.zip', __DIR__.'/storage/books.zip');
 ```
 
-Also see [usage example](examples/symfony-progress-bar.md) with the [Symfony Progress Bar](https://symfony.com/doc/current/components/console/helpers/progressbar.html) component.
+See [usage example](examples/symfony-progress-bar.md) with the [Symfony Progress Bar](https://symfony.com/doc/current/components/console/helpers/progressbar.html) component.
 
 ## ☕ Contributing
 

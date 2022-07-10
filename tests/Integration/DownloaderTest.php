@@ -101,7 +101,7 @@ class DownloaderTest extends TestCase
 
             static::fail('Expected RuntimeException was not thrown');
         } catch (RuntimeException $e) {
-            self::assertStringEqualsFile($path, 'Old content!');
+            static::assertStringEqualsFile($path, 'Old content!');
         }
     }
 

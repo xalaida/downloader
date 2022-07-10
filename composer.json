@@ -2,7 +2,7 @@
     "name": "nevadskiy/downloader",
     "description": "Download files using PHP and Curl",
     "license": "MIT",
-    "keywords": ["downloader", "download", "files"],
+    "keywords": ["downloader", "download", "files", "curl"],
     "authors": [
         {
             "name": "Nevadskiy",

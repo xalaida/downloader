@@ -19,7 +19,11 @@ class TempFile
      */
     public function __construct(string $directory = null)
     {
-        $this->path = tempnam($directory ?: sys_get_temp_dir(), 'tmp_');
+        $directory = $directory ?: sys_get_temp_dir();
+
+        $this->ensureDirectoryWritable($directory);
+
+        $this->path = tempnam($directory, 'tmp_');
     }
 
     /**
@@ -33,11 +37,23 @@ class TempFile
     }
 
     /**
+     * Determine if the temp file instance is destroyed.
+     */
+    public function destroyed(): bool
+    {
+        if (! $this->path) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Write temp file using the given callback.
      */
     public function writeUsing(callable $callback)
     {
-        $this->ensureFileExists();
+        $this->ensureNotDestroyed();
 
         $stream = fopen($this->path, 'wb+');
 
@@ -55,17 +71,38 @@ class TempFile
     }
 
     /**
-     * Move a file to the given path.
+     * Write a content to the file.
      */
-    public function move(string $path)
+    public function write(string $content)
     {
-        $this->ensureFileExists();
+        $this->writeUsing(function ($stream) use ($content) {
+            fwrite($stream, $content);
+        });
+    }
 
-        @unlink($path);
+    /**
+     * Persist a file to the given path
+     */
+    public function persist(string $path)
+    {
+        $this->ensureNotDestroyed();
 
-        rename($this->path, $path);
+        // TODO: assert path is not a directory
+        // TODO: assert path directory is writable
 
-        $this->path = $path;
+        if (false === @rename($this->path, $path)) {
+            throw new RuntimeException(sprintf('Could not rename a "%s" file', $this->path));
+        }
+
+        $this->path = null;
+    }
+
+    /**
+     * Alias to persist a file to the given path.
+     */
+    public function save(string $path)
+    {
+        $this->persist($path);
     }
 
     /**
@@ -73,18 +110,42 @@ class TempFile
      */
     public function delete()
     {
-        $this->ensureFileExists();
+        $this->ensureNotDestroyed();
 
-        unlink($this->path);
+        if (false === @unlink($this->path)) {
+            throw new RuntimeException(sprintf('Could not delete a "%s" file', $this->path));
+        }
+
+        $this->path = null;
     }
 
     /**
-     * Ensure that the file exists.
+     * Destroy the temp file instance.
      */
-    protected function ensureFileExists()
+    public function __destruct()
     {
-        if (! $this->path) {
-            throw new RuntimeException('File does not exists');
+        if (! $this->destroyed()) {
+            $this->delete();
+        }
+    }
+
+    /**
+     * Ensure that the temp file instance is not destroyed.
+     */
+    protected function ensureNotDestroyed()
+    {
+        if ($this->destroyed()) {
+            throw new RuntimeException('The TempFile instance is destroyed');
+        }
+    }
+
+    /**
+     * Ensure the given directory exists and is writable.
+     */
+    protected function ensureDirectoryWritable(string $directory)
+    {
+        if (! is_dir($directory) || ! is_writable($directory)) {
+            throw new RuntimeException(sprintf('The "%s" must be a writable directory', $directory));
         }
     }
 }

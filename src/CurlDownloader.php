@@ -105,7 +105,7 @@ class CurlDownloader implements Downloader
                 $this->writeStreamUsingCurl($url, $stream);
             });
 
-            $tempFile->move($path);
+            $tempFile->save($path);
         } catch (DownloaderException $e) {
             $tempFile->delete();
 

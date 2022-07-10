@@ -14,11 +14,9 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
       - name: Run php-cs-fixer
-        run: ./vendor/bin/php-cs-fixer fix --dry-run
+        run: ./vendor/bin/php-cs-fixer fix --dry-run --diff-format udiff

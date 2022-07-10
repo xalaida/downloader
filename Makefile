@@ -7,6 +7,9 @@ down:
 	docker-compose down
 
 # Build docker containers
+install: build composer.install
+
+# Build docker containers
 build:
 	docker-compose build
 

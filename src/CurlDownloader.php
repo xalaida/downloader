@@ -91,15 +91,15 @@ class CurlDownloader implements Downloader
     /**
      * @inheritdoc
      */
-    public function download(string $url, string $path)
+    public function download(string $url, string $destination)
     {
         $this->ensureUrlIsValid($url);
 
-        $path = $this->getPath($path, $url);
+        $path = $this->getDestinationPath($destination, $url);
 
         $this->ensureFileCanBeWritten($path);
 
-        $tempFile = new TempFile($this->getDirectory($path));
+        $tempFile = new TempFile($this->getDestinationDirectory($path));
 
         try {
             $tempFile->writeUsing(function ($stream) use ($url) {
@@ -125,21 +125,21 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Get a file path by the given path and URL.
+     * Get a destination file path by the given directory and URL.
      */
-    protected function getPath(string $path, string $url): string
+    protected function getDestinationPath(string $destination, string $url): string
     {
-        if (! is_dir($path)) {
-            return $path;
+        if (! is_dir($destination)) {
+            return $destination;
         }
 
-        return $path . DIRECTORY_SEPARATOR . $this->getFileNameFromUrl($url);
+        return $destination . DIRECTORY_SEPARATOR . $this->getFileNameByUrl($url);
     }
 
     /**
-     * Get a file name from the given URL.
+     * Get a file name by the given URL.
      */
-    protected function getFileNameFromUrl(string $url): string
+    protected function getFileNameByUrl(string $url): string
     {
         return basename($url);
     }
@@ -157,7 +157,7 @@ class CurlDownloader implements Downloader
     /**
      * Get a directory from the given path.
      */
-    protected function getDirectory(string $path): string
+    protected function getDestinationDirectory(string $path): string
     {
         $directory = dirname($path);
 

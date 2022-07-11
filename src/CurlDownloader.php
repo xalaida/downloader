@@ -91,7 +91,7 @@ class CurlDownloader implements Downloader
     /**
      * @inheritdoc
      */
-    public function download(string $url, string $destination)
+    public function download(string $url, string $destination): string
     {
         $this->ensureUrlIsValid($url);
 
@@ -107,6 +107,8 @@ class CurlDownloader implements Downloader
             });
 
             $tempFile->save($path);
+
+            return $path;
         } catch (DownloaderException $e) {
             $tempFile->delete();
 

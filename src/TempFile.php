@@ -21,7 +21,7 @@ class TempFile
     {
         $directory = $directory ?: sys_get_temp_dir();
 
-        $this->ensureDirectoryWritable($directory);
+        $this->ensureDirectoryIsWritable($directory);
 
         $this->path = tempnam($directory, 'tmp_');
     }
@@ -139,7 +139,7 @@ class TempFile
     /**
      * Ensure the given directory exists and is writable.
      */
-    protected function ensureDirectoryWritable(string $directory)
+    protected function ensureDirectoryIsWritable(string $directory)
     {
         if (! is_dir($directory) || ! is_writable($directory)) {
             throw new RuntimeException(sprintf('The "%s" must be a writable directory', $directory));

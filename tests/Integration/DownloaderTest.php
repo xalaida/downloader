@@ -15,13 +15,14 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/hello-world.txt';
+        $destination = $storage.'/hello-world.txt';
 
         $downloader = new CurlDownloader();
-        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $path);
 
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
+
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -29,13 +30,14 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/home.txt';
+        $destination = $storage.'/home.txt';
 
         $downloader = new CurlDownloader();
-        $downloader->download($this->serverUrl().'/', $path);
 
-        static::assertFileExists($path);
-        static::assertStringEqualsFile($path, 'Welcome home!');
+        $downloader->download($this->serverUrl().'/', $destination);
+
+        static::assertFileExists($destination);
+        static::assertStringEqualsFile($destination, 'Welcome home!');
     }
 
     /** @test */
@@ -59,30 +61,31 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/invalid-url.txt';
+        $destination = $storage.'/invalid-url.txt';
 
         $downloader = new CurlDownloader();
 
         try {
-            $downloader->download('invalid-url', $path);
+            $downloader->download('invalid-url', $destination);
 
             static::fail('Expected RuntimeException was not thrown');
         } catch (InvalidArgumentException $e) {
-            static::assertFileNotExists($path);
+            static::assertFileNotExists($destination);
         }
     }
 
     /** @test */
-    public function it_handles_path_to_not_existing_directory()
+    public function it_handles_destination_to_not_existing_directory()
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/files/hello-world.txt';
+        $destination = $storage.'/files/hello-world.txt';
 
         $this->expectException(RuntimeException::class);
 
         $downloader = new CurlDownloader();
-        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $path);
+
+        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -90,18 +93,18 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/hello-world.txt';
+        $destination = $storage.'/hello-world.txt';
 
-        file_put_contents($path, 'Old content!');
+        file_put_contents($destination, 'Old content!');
 
         $downloader = new CurlDownloader();
 
         try {
-            $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $path);
+            $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
 
             static::fail('Expected RuntimeException was not thrown');
         } catch (RuntimeException $e) {
-            static::assertStringEqualsFile($path, 'Old content!');
+            static::assertStringEqualsFile($destination, 'Old content!');
         }
     }
 
@@ -110,32 +113,32 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/hello-world.txt';
+        $destination = $storage.'/hello-world.txt';
 
-        file_put_contents($path, 'Old content!');
+        file_put_contents($destination, 'Old content!');
 
         $downloader = new CurlDownloader();
 
         $downloader->overwrite();
 
-        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $path);
+        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
 
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
-    public function it_can_use_directory_as_path_and_determine_file_name_from_url()
+    public function it_can_use_directory_as_destination_and_determine_file_name_from_url()
     {
         $storage = $this->prepareStorageDirectory();
 
         $downloader = new CurlDownloader();
-        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $storage);
 
-        $path = $storage.'/hello-world.txt';
+        $destination = $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $storage);
 
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertEquals($storage.'/hello-world.txt', $destination);
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -143,13 +146,14 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/hello-world.txt';
+        $destination = $storage.'/hello-world.txt';
 
         $downloader = new CurlDownloader();
-        $downloader->download($this->serverUrl().'/redirect/hello-world.txt', $path);
 
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        $downloader->download($this->serverUrl().'/redirect/hello-world.txt', $destination);
+
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -158,7 +162,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $url = $this->serverUrl().'/redirect/hello-world.txt';
-        $path = $storage.'/hello-world.txt';
+        $destination = $storage.'/hello-world.txt';
 
         $downloader = new CurlDownloader();
 
@@ -166,10 +170,10 @@ class DownloaderTest extends TestCase
             static::assertSame($url, curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
         });
 
-        $downloader->download($url, $path);
+        $downloader->download($url, $destination);
 
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -177,7 +181,7 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/hello-world.txt';
+        $destination = $storage.'/hello-world.txt';
 
         $downloader = new CurlDownloader();
 
@@ -185,10 +189,10 @@ class DownloaderTest extends TestCase
             sprintf('Authorization: Basic %s', base64_encode('client:secret')),
         ]);
 
-        $downloader->download($this->serverUrl().'/private/hello-world.txt', $path);
+        $downloader->download($this->serverUrl().'/private/hello-world.txt', $destination);
 
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -196,7 +200,7 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $path = $storage.'/hello-world.txt';
+        $destination = $storage.'/hello-world.txt';
 
         $downloader = new CurlDownloader();
 
@@ -204,9 +208,9 @@ class DownloaderTest extends TestCase
             'Authorization' => sprintf('Basic %s', base64_encode('client:secret')),
         ]);
 
-        $downloader->download($this->serverUrl().'/private/hello-world.txt', $path);
+        $downloader->download($this->serverUrl().'/private/hello-world.txt', $destination);
 
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 }

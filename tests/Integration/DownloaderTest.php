@@ -123,6 +123,23 @@ class DownloaderTest extends TestCase
     }
 
     /** @test */
+    public function it_can_specify_destination_directory_with_dot_and_create_it_when_it_is_missing()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $downloader = new CurlDownloader();
+
+        $downloader->createDestinationDirectory();
+
+        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $storage.'/files/2022/07/26/.');
+
+        $destination = $storage.'/files/2022/07/26/hello-world.txt';
+
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
     public function it_throws_exception_when_file_already_exists()
     {
         $storage = $this->prepareStorageDirectory();

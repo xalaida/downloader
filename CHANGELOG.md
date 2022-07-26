@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Clobbering behaviour
+- Possibility to create destination directory on the fly
+- Possibility to specify directory using linux path syntax
+
 ### Changed
 - Small refactoring
 - Return path of downloaded file

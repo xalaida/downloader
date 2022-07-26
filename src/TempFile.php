@@ -81,9 +81,9 @@ class TempFile
     }
 
     /**
-     * Persist a file to the given path
+     * Save a file to the given path
      */
-    public function persist(string $path)
+    public function save(string $path)
     {
         $this->ensureNotDestroyed();
 
@@ -92,14 +92,6 @@ class TempFile
         }
 
         $this->path = null;
-    }
-
-    /**
-     * Alias to persist a file to the given path.
-     */
-    public function save(string $path)
-    {
-        $this->persist($path);
     }
 
     /**

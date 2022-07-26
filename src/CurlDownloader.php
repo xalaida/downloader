@@ -124,13 +124,18 @@ class CurlDownloader implements Downloader
     {
         $this->ensureUrlIsValid($url);
 
-        $path = $this->getDestinationPath($destination, $url);
+        $directory = $this->getDirectoryByDestination($destination);
+        $fileName = $this->getFileNameByDestination($destination) ?: $this->getFileNameByUrl($url);
+
+        $path = $this->getDestinationPath($directory, $fileName);
 
         if ($this->shouldReturnExistingFile($path)) {
             return $path;
         }
 
-        $tempFile = new TempFile($this->getDestinationDirectory($path));
+        $this->ensureDestinationDirectoryExists($directory);
+
+        $tempFile = new TempFile($directory);
 
         try {
             $tempFile->writeUsing(function ($stream) use ($url) {
@@ -158,15 +163,35 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Get a destination file path by the given directory and URL.
+     * Get a directory by the given destination.
      */
-    protected function getDestinationPath(string $destination, string $url): string
+    private function getDirectoryByDestination(string $destination)
     {
-        if (! is_dir($destination)) {
+        if (is_dir($destination)) {
             return $destination;
         }
 
-        return $destination . DIRECTORY_SEPARATOR . $this->getFileNameByUrl($url);
+        return dirname($destination);
+    }
+
+    /**
+     * Get a file name by the given destination.
+     *
+     * @return string|null
+     */
+    protected function getFileNameByDestination(string $destination)
+    {
+        if (is_dir($destination)) {
+            return null;
+        }
+
+        $fileName = basename($destination);
+
+        if (! trim($fileName, '.')) {
+            return null;
+        }
+
+        return $fileName;
     }
 
     /**
@@ -175,6 +200,14 @@ class CurlDownloader implements Downloader
     protected function getFileNameByUrl(string $url): string
     {
         return basename($url);
+    }
+
+    /**
+     * Get a destination path by the given directory and file name.
+     */
+    protected function getDestinationPath(string $directory, string $fileName): string
+    {
+        return $directory . DIRECTORY_SEPARATOR . $fileName;
     }
 
     /**
@@ -196,10 +229,8 @@ class CurlDownloader implements Downloader
     /**
      * Get a directory from the given path.
      */
-    protected function getDestinationDirectory(string $path): string
+    protected function ensureDestinationDirectoryExists(string $directory): string
     {
-        $directory = dirname($path);
-
         if (is_dir($directory)) {
             return $directory;
         }

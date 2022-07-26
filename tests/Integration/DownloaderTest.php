@@ -89,6 +89,40 @@ class DownloaderTest extends TestCase
     }
 
     /** @test */
+    public function it_can_create_destination_directory_when_it_is_missing()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $destination = $storage.'/files/hello-world.txt';
+
+        $downloader = new CurlDownloader();
+
+        $downloader->createDestinationDirectory();
+
+        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
+
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_can_create_destination_directory_recursively_when_it_is_missing()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $destination = $storage.'/files/2022/07/26/hello-world.txt';
+
+        $downloader = new CurlDownloader();
+
+        $downloader->createDestinationDirectory();
+
+        $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
+
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
     public function it_throws_exception_when_file_already_exists()
     {
         $storage = $this->prepareStorageDirectory();
@@ -119,7 +153,7 @@ class DownloaderTest extends TestCase
 
         $downloader = new CurlDownloader();
 
-        $downloader->overwrite();
+        $downloader->withClobbering();
 
         $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
 

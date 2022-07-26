@@ -29,7 +29,14 @@ class CurlDownloader implements Downloader
      *
      * @var bool
      */
-    protected $overwrite = false;
+    protected $clobber = false;
+
+    /**
+     * Indicates if it creates destination directory when it is missing.
+     *
+     * @var bool
+     */
+    protected $createsDestinationDirectory = false;
 
     /**
      * Make a new downloader instance.
@@ -37,6 +44,36 @@ class CurlDownloader implements Downloader
     public function __construct(array $curlOptions = [])
     {
         $this->curlOptions = $this->curlOptions() + $curlOptions;
+    }
+
+    /**
+     * Overwrite content when a file already exists.
+     */
+    public function withClobbering(): CurlDownloader
+    {
+        $this->clobber = true;
+
+        return $this;
+    }
+
+    /**
+     * Do not overwrite content when a file already exists.
+     */
+    public function withoutClobbering(): CurlDownloader
+    {
+        $this->clobber = false;
+
+        return $this;
+    }
+
+    /**
+     * Recursively create destination directory when it is missing.
+     */
+    public function createDestinationDirectory(): CurlDownloader
+    {
+        $this->createsDestinationDirectory = true;
+
+        return $this;
     }
 
     /**
@@ -81,14 +118,6 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Overwrite the content if a file already exists.
-     */
-    public function overwrite(bool $overwrite = true)
-    {
-        $this->overwrite = $overwrite;
-    }
-
-    /**
      * @inheritdoc
      */
     public function download(string $url, string $destination): string
@@ -97,7 +126,9 @@ class CurlDownloader implements Downloader
 
         $path = $this->getDestinationPath($destination, $url);
 
-        $this->ensureFileCanBeWritten($path);
+        if ($this->shouldReturnExistingFile($path)) {
+            return $path;
+        }
 
         $tempFile = new TempFile($this->getDestinationDirectory($path));
 
@@ -147,13 +178,19 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Ensure that the file can be written by the given path.
+     * Determine if it should return a file when it is already exists.
      */
-    protected function ensureFileCanBeWritten(string $path)
+    protected function shouldReturnExistingFile(string $path): bool
     {
-        if (! $this->overwrite && file_exists($path)) {
-            throw new RuntimeException(sprintf('The file "%s" already exists', $path));
+        if (! file_exists($path)) {
+            return false;
         }
+
+        if ($this->clobber) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -163,8 +200,16 @@ class CurlDownloader implements Downloader
     {
         $directory = dirname($path);
 
-        if (! is_dir($directory)) {
-            throw new RuntimeException(sprintf('Directory "%s" does not exists', $directory));
+        if (is_dir($directory)) {
+            return $directory;
+        }
+
+        if (! $this->createsDestinationDirectory) {
+            throw new RuntimeException(sprintf('Directory "%s" does not exist', $directory));
+        }
+
+        if (! mkdir($directory, 0755, true) && ! is_dir($directory)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $directory));
         }
 
         return $directory;

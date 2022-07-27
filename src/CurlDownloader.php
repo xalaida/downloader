@@ -11,6 +11,11 @@ use function is_int;
 class CurlDownloader implements Downloader
 {
     /**
+     * Default permissions for created destination directory.
+     */
+    const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
+
+    /**
      * The cURL options array.
      *
      * @var array
@@ -36,7 +41,21 @@ class CurlDownloader implements Downloader
      *
      * @var bool
      */
-    protected $createsDestinationDirectory = false;
+    protected $createsDirectory = false;
+
+    /**
+     * Indicates if it creates destination directory recursively when it is missing.
+     *
+     * @var bool
+     */
+    protected $createsDirectoryRecursively = false;
+
+    /**
+     * Permissions of destination directory that can be created if it is missing.
+     *
+     * @var int
+     */
+    protected $directoryPermissions = self::DEFAULT_DIRECTORY_PERMISSIONS;
 
     /**
      * Make a new downloader instance.
@@ -67,13 +86,23 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Recursively create destination directory when it is missing.
+     * Create destination directory when it is missing.
      */
-    public function createDestinationDirectory(): CurlDownloader
+    public function createDirectory(bool $recursive = false, int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
     {
-        $this->createsDestinationDirectory = true;
+        $this->createsDirectory = true;
+        $this->createsDirectoryRecursively = $recursive;
+        $this->directoryPermissions = $permissions;
 
         return $this;
+    }
+
+    /**
+     * Recursively create destination directory when it is missing.
+     */
+    public function createDirectoryRecursively(int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
+    {
+        return $this->createDirectory(true, $permissions);
     }
 
     /**
@@ -229,21 +258,20 @@ class CurlDownloader implements Downloader
     /**
      * Get a directory from the given path.
      */
-    protected function ensureDestinationDirectoryExists(string $directory): string
+    protected function ensureDestinationDirectoryExists(string $directory)
     {
         if (is_dir($directory)) {
-            return $directory;
+            return;
         }
 
-        if (! $this->createsDestinationDirectory) {
+        if (! $this->createsDirectory) {
             throw new RuntimeException(sprintf('Directory "%s" does not exist', $directory));
         }
 
-        if (! mkdir($directory, 0755, true) && ! is_dir($directory)) {
+        // TODO: specify separately mkdir directory permissions
+        if (! mkdir($directory, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($directory)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $directory));
         }
-
-        return $directory;
     }
 
     /**

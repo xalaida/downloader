@@ -97,7 +97,7 @@ class DownloaderTest extends TestCase
 
         $downloader = new CurlDownloader();
 
-        $downloader->createDestinationDirectory();
+        $downloader->createDirectory();
 
         $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
 
@@ -114,7 +114,7 @@ class DownloaderTest extends TestCase
 
         $downloader = new CurlDownloader();
 
-        $downloader->createDestinationDirectory();
+        $downloader->createDirectoryRecursively();
 
         $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $destination);
 
@@ -129,7 +129,7 @@ class DownloaderTest extends TestCase
 
         $downloader = new CurlDownloader();
 
-        $downloader->createDestinationDirectory();
+        $downloader->createDirectoryRecursively();
 
         $downloader->download($this->serverUrl().'/fixtures/hello-world.txt', $storage.'/files/2022/07/26/.');
 

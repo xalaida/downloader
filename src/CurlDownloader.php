@@ -58,6 +58,13 @@ class CurlDownloader implements Downloader
     protected $directoryPermissions = self::DEFAULT_DIRECTORY_PERMISSIONS;
 
     /**
+     * Indicates the base directory to use to create the destination path.
+     *
+     * @var string
+     */
+    protected $baseDirectory;
+
+    /**
      * Make a new downloader instance.
      */
     public function __construct(array $curlOptions = [])
@@ -106,6 +113,16 @@ class CurlDownloader implements Downloader
     }
 
     /**
+     * Specify the base directory to use to create the destination path.
+     */
+    public function baseDirectory(string $directory): CurlDownloader
+    {
+        $this->baseDirectory = rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+        return $this;
+    }
+
+    /**
      * The default cURL options.
      */
     protected function curlOptions(): array
@@ -119,23 +136,27 @@ class CurlDownloader implements Downloader
     /**
      * Add a cURL option with the given value.
      */
-    public function withCurlOption($option, $value)
+    public function withCurlOption($option, $value): CurlDownloader
     {
         $this->curlOptions[$option] = $value;
+
+        return $this;
     }
 
     /**
      * Add a cURL handle callback.
      */
-    public function withCurlHandle(callable $callback)
+    public function withCurlHandle(callable $callback): CurlDownloader
     {
         $this->curlHandleCallbacks[] = $callback;
+
+        return $this;
     }
 
     /**
      * Add headers to the cURL request.
      */
-    public function withHeaders(array $headers)
+    public function withHeaders(array $headers): CurlDownloader
     {
         $curlHeaders = [];
 
@@ -143,24 +164,23 @@ class CurlDownloader implements Downloader
             $curlHeaders[] = is_int($name) ? $value : "{$name}: {$value}";
         }
 
-        $this->withCurlOption(CURLOPT_HTTPHEADER, $curlHeaders);
+        return $this->withCurlOption(CURLOPT_HTTPHEADER, $curlHeaders);
     }
 
     /**
      * @inheritdoc
      */
-    public function download(string $url, string $destination): string
+    public function download(string $url, string $destination = './'): string
     {
         $this->ensureUrlIsValid($url);
 
-        $directory = $this->getDirectoryByDestination($destination);
-        $fileName = $this->getFileNameByDestination($destination) ?: $this->getFileNameByUrl($url);
-
-        $path = $this->getDestinationPath($directory, $fileName);
+        $path = $this->getDestinationPath($url, $destination);
 
         if ($this->shouldReturnExistingFile($path)) {
             return $path;
         }
+
+        $directory = dirname($path);
 
         $this->ensureDestinationDirectoryExists($directory);
 
@@ -173,7 +193,7 @@ class CurlDownloader implements Downloader
 
             $tempFile->save($path);
 
-            return $path;
+            return realpath($path);
         } catch (DownloaderException $e) {
             $tempFile->delete();
 
@@ -192,35 +212,37 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Get a directory by the given destination.
+     * Get a destination path of the downloaded file.
      */
-    private function getDirectoryByDestination(string $destination)
+    protected function getDestinationPath(string $url, string $destination): string
     {
-        if (is_dir($destination)) {
+        $destination = $this->getDestinationInBaseDirectory(rtrim($destination, '.'));
+
+        if (! $this->isDirectory($destination)) {
             return $destination;
         }
 
-        return dirname($destination);
+        return rtrim($destination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->getFileNameByUrl($url);
     }
 
     /**
-     * Get a file name by the given destination.
-     *
-     * @return string|null
+     * Get a destination path according to the base directory.
      */
-    protected function getFileNameByDestination(string $destination)
+    protected function getDestinationInBaseDirectory(string $destination): string
     {
-        if (is_dir($destination)) {
-            return null;
+        if (! $this->baseDirectory) {
+            return $destination;
         }
 
-        $fileName = basename($destination);
+        return $this->baseDirectory . ltrim($destination, DIRECTORY_SEPARATOR . '.');
+    }
 
-        if (! trim($fileName, '.')) {
-            return null;
-        }
-
-        return $fileName;
+    /**
+     * Determine if the given destination is a directory.
+     */
+    protected function isDirectory(string $destination): bool
+    {
+        return is_dir($destination) || mb_substr($destination, -1) === DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -229,14 +251,6 @@ class CurlDownloader implements Downloader
     protected function getFileNameByUrl(string $url): string
     {
         return basename($url);
-    }
-
-    /**
-     * Get a destination path by the given directory and file name.
-     */
-    protected function getDestinationPath(string $directory, string $fileName): string
-    {
-        return $directory . DIRECTORY_SEPARATOR . $fileName;
     }
 
     /**
@@ -268,7 +282,6 @@ class CurlDownloader implements Downloader
             throw new RuntimeException(sprintf('Directory "%s" does not exist', $directory));
         }
 
-        // TODO: specify separately mkdir directory permissions
         if (! mkdir($directory, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($directory)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $directory));
         }

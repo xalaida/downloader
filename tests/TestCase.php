@@ -13,9 +13,11 @@ class TestCase extends BaseTestCase
     /**
      * Get a base URL of the server with fixture files.
      */
-    protected function serverUrl(): string
+    protected function serverUrl(string $path = '/'): string
     {
-        return $_ENV['TESTING_SERVER_URL'] ?? 'http://127.0.0.1:8888';
+        $url = $_ENV['TESTING_SERVER_URL'] ?? 'http://127.0.0.1:8888';
+
+        return $url . DIRECTORY_SEPARATOR . ltrim($path, '/');
     }
 
     /**

@@ -11,6 +11,26 @@ use function is_int;
 class CurlDownloader implements Downloader
 {
     /**
+     * Throw an exception if the file already exists.
+     */
+    const CLOBBER_MODE_FAIL = 0;
+
+    /**
+     * Skip downloading if the file already exists.
+     */
+    const CLOBBER_MODE_SKIP = 1;
+
+    /**
+     * Update contents if the existing file is different from the downloaded one.
+     */
+    const CLOBBER_MODE_UPDATE = 2;
+
+    /**
+     * Replace contents if file already exists.
+     */
+    const CLOBBER_MODE_REPLACE = 3;
+
+    /**
      * Default permissions for created destination directory.
      */
     const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
@@ -30,11 +50,11 @@ class CurlDownloader implements Downloader
     protected $curlHandleCallbacks = [];
 
     /**
-     * Indicates if the downloader should overwrite the content if a file already exists.
+     * Specifies how the downloader should handle a file that already exists.
      *
-     * @var bool
+     * @var int
      */
-    protected $clobber = false;
+    protected $clobberMode = self::CLOBBER_MODE_SKIP;
 
     /**
      * Indicates if it creates destination directory when it is missing.
@@ -73,21 +93,52 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Overwrite content when a file already exists.
+     * The default cURL options.
      */
-    public function withClobbering(): CurlDownloader
+    protected function curlOptions(): array
     {
-        $this->clobber = true;
+        return [
+            CURLOPT_FAILONERROR => true,
+            CURLOPT_FOLLOWLOCATION => true,
+        ];
+    }
+
+    /**
+     * Throw an exception if the file already exists.
+     */
+    public function failIfExists(): CurlDownloader
+    {
+        $this->clobberMode = self::CLOBBER_MODE_FAIL;
 
         return $this;
     }
 
     /**
-     * Do not overwrite content when a file already exists.
+     * Skip downloading if the file already exists.
      */
-    public function withoutClobbering(): CurlDownloader
+    public function skipIfExists(): CurlDownloader
     {
-        $this->clobber = false;
+        $this->clobberMode = self::CLOBBER_MODE_SKIP;
+
+        return $this;
+    }
+
+    /**
+     * Update contents if the existing file is different from the downloaded one.
+     */
+    public function updateIfExists(): CurlDownloader
+    {
+        $this->clobberMode = self::CLOBBER_MODE_UPDATE;
+
+        return $this;
+    }
+
+    /**
+     * Replace contents if file already exists.
+     */
+    public function replaceIfExists(): CurlDownloader
+    {
+        $this->clobberMode = self::CLOBBER_MODE_REPLACE;
 
         return $this;
     }
@@ -120,17 +171,6 @@ class CurlDownloader implements Downloader
         $this->baseDirectory = rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
         return $this;
-    }
-
-    /**
-     * The default cURL options.
-     */
-    protected function curlOptions(): array
-    {
-        return [
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_FOLLOWLOCATION => true,
-        ];
     }
 
     /**
@@ -262,11 +302,19 @@ class CurlDownloader implements Downloader
             return false;
         }
 
-        if ($this->clobber) {
-            return false;
+        if ($this->clobberMode === self::CLOBBER_MODE_FAIL) {
+            throw new RuntimeException(sprintf('File "%s" already exists', $path));
         }
 
-        return true;
+        if ($this->clobberMode === self::CLOBBER_MODE_SKIP) {
+            return true;
+        }
+
+        if ($this->clobberMode === self::CLOBBER_MODE_UPDATE) {
+            // TODO: feature update check.
+        }
+
+        return false;
     }
 
     /**
@@ -299,9 +347,7 @@ class CurlDownloader implements Downloader
 
         curl_setopt($ch, CURLOPT_FILE, $stream);
 
-        foreach ($this->curlOptions as $option => $value) {
-            curl_setopt($ch, $option, $value);
-        }
+        curl_setopt_array($ch, $this->curlOptions);
 
         foreach ($this->curlHandleCallbacks as $handleCallbacks) {
             $handleCallbacks($ch);

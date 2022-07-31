@@ -182,7 +182,7 @@ class DownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_downloads_file_to_base_directory_with_nullable_destination()
+    public function it_downloads_file_to_base_directory_with_default_destination()
     {
         $storage = $this->prepareStorageDirectory();
 
@@ -215,7 +215,45 @@ class DownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_can_overwrite_a_file_content()
+    public function it_can_return_already_existing_file()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $destination = $storage.'/hello-world.txt';
+
+        file_put_contents($destination, 'Old content!');
+
+        $destination = (new CurlDownloader())
+            ->skipIfExists()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+
+        static::assertEquals($storage.'/hello-world.txt', $destination);
+        static::assertStringEqualsFile($destination, 'Old content!');
+    }
+
+//    TODO: feature this test based on header size
+//    /** @test */
+//    public function it_can_update_content_when_file_already_exists()
+//    {
+//        $storage = $this->prepareStorageDirectory();
+//
+//        $destination = $storage.'/hello-world.txt';
+//
+//        file_put_contents($destination, 'Old content!');
+//
+//        try {
+//            (new CurlDownloader())
+//                ->failIfExists()
+//                ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+//
+//            static::fail('Expected RuntimeException was not thrown');
+//        } catch (RuntimeException $e) {
+//            static::assertStringEqualsFile($destination, 'Old content!');
+//        }
+//    }
+
+    /** @test */
+    public function it_can_replace_content_when_file_already_exists()
     {
         $storage = $this->prepareStorageDirectory();
 
@@ -224,7 +262,7 @@ class DownloaderTest extends TestCase
         file_put_contents($destination, 'Old content!');
 
         (new CurlDownloader())
-            ->withClobbering()
+            ->replaceIfExists()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
         static::assertFileExists($destination);

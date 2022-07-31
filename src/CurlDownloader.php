@@ -3,10 +3,12 @@
 namespace Nevadskiy\Downloader;
 
 use InvalidArgumentException;
+use Nevadskiy\Downloader\Exceptions\DownloaderException;
+use Nevadskiy\Downloader\Exceptions\FileNotModifiedException;
+use Nevadskiy\Downloader\Exceptions\NetworkException;
 use RuntimeException;
 use function dirname;
 use const DIRECTORY_SEPARATOR;
-use function is_int;
 
 class CurlDownloader implements Downloader
 {
@@ -34,6 +36,11 @@ class CurlDownloader implements Downloader
      * Default permissions for created destination directory.
      */
     const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
+
+    /**
+     * The cURL request headers.
+     */
+    protected $headers = [];
 
     /**
      * The cURL options array.
@@ -198,13 +205,11 @@ class CurlDownloader implements Downloader
      */
     public function withHeaders(array $headers): CurlDownloader
     {
-        $curlHeaders = [];
-
         foreach ($headers as $name => $value) {
-            $curlHeaders[] = is_int($name) ? $value : "{$name}: {$value}";
+            $this->headers[$name] = $value;
         }
 
-        return $this->withCurlOption(CURLOPT_HTTPHEADER, $curlHeaders);
+        return $this;
     }
 
     /**
@@ -220,24 +225,15 @@ class CurlDownloader implements Downloader
             return $path;
         }
 
-        $directory = dirname($path);
-
-        $this->ensureDestinationDirectoryExists($directory);
-
-        $tempFile = new TempFile($directory);
+        // TODO: remove double "file_exists" check.
+        $headers = file_exists($path) && $this->clobberMode === self::CLOBBER_MODE_UPDATE ? ['If-Modified-Since' => gmdate('D, d M Y H:i:s T', filemtime($path))] : [];
 
         try {
-            $tempFile->writeUsing(function ($stream) use ($url) {
-                $this->writeStreamUsingCurl($url, $stream);
-            });
+            $this->performDownload($path, $url, $headers);
 
-            $tempFile->save($path);
-
-            return realpath($path);
-        } catch (DownloaderException $e) {
-            $tempFile->delete();
-
-            throw $e;
+            return $this->normalizePath($path);
+        } catch (FileNotModifiedException $e) {
+            return $this->normalizePath($path);
         }
     }
 
@@ -310,11 +306,6 @@ class CurlDownloader implements Downloader
             return true;
         }
 
-        if ($this->clobberMode === self::CLOBBER_MODE_UPDATE) {
-            // TODO: feature update check.
-            return true;
-        }
-
         return false;
     }
 
@@ -342,11 +333,15 @@ class CurlDownloader implements Downloader
      * @param resource $stream
      * @return string|null
      */
-    protected function writeStreamUsingCurl(string $url, $stream)
+    protected function writeStreamUsingCurl($stream, string $url, array $headers = [])
     {
         $ch = curl_init($url);
 
+        // TODO: make this option reserved.
         curl_setopt($ch, CURLOPT_FILE, $stream);
+
+        // TODO: make this option reserved.
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $this->normalizeHeaders(array_merge($this->headers, $headers)));
 
         curl_setopt_array($ch, $this->curlOptions);
 
@@ -356,16 +351,67 @@ class CurlDownloader implements Downloader
 
         $response = curl_exec($ch);
 
+        // TODO: refactor error structure.
         $error = $response === false
-            ? curl_error($ch)
+            ? new NetworkException(curl_error($ch))
             : null;
+
+        // TODO: use 304 response code constant.
+        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 304) {
+            // TODO: refactor error structure.
+            $error = new FileNotModifiedException();
+        }
 
         curl_close($ch);
 
         if ($error) {
-            throw new DownloaderException($error);
+            throw $error;
         }
 
         return $response;
+    }
+
+    private function normalizeHeaders(array $headers): array
+    {
+        $normalized = [];
+
+        foreach ($headers as $name => $value) {
+            $normalized[] = "{$name}: {$value}";
+        }
+
+        return $normalized;
+    }
+
+    public function normalizePath(string $path): string
+    {
+        return realpath($path);
+    }
+
+    /**
+     * @param TempFile $tempFile
+     * @param string $url
+     * @param array $headers
+     * @param string $path
+     * @return string|void
+     */
+    protected function performDownload(string $path, string $url, array $headers)
+    {
+        $directory = dirname($path);
+
+        $this->ensureDestinationDirectoryExists($directory);
+
+        $tempFile = new TempFile($directory);
+
+        try {
+            $tempFile->writeUsing(function ($stream) use ($url, $headers) {
+                $this->writeStreamUsingCurl($stream, $url, $headers);
+            });
+
+            $tempFile->save($path);
+        } catch (DownloaderException $e) {
+            $tempFile->delete();
+
+            throw $e;
+        }
     }
 }

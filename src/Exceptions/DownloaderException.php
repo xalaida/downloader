@@ -1,6 +1,6 @@
 <?php
 
-namespace Nevadskiy\Downloader;
+namespace Nevadskiy\Downloader\Exceptions;
 
 use RuntimeException;
 

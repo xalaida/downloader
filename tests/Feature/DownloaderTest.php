@@ -2,9 +2,10 @@
 
 namespace Nevadskiy\Downloader\Tests\Feature;
 
+use DateTime;
 use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\DownloaderException;
+use Nevadskiy\Downloader\Exceptions\NetworkException;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
 
@@ -48,7 +49,7 @@ class DownloaderTest extends TestCase
             );
 
             static::fail('Expected DownloaderException was not thrown');
-        } catch (DownloaderException $e) {
+        } catch (NetworkException $e) {
             static::assertDirectoryIsEmpty($storage);
         }
     }
@@ -231,26 +232,42 @@ class DownloaderTest extends TestCase
         static::assertStringEqualsFile($destination, 'Old content!');
     }
 
-//    TODO: feature this test based on If-Modified-Since header
-//    /** @test */
-//    public function it_can_update_content_when_file_already_exists()
-//    {
-//        $storage = $this->prepareStorageDirectory();
-//
-//        $destination = $storage.'/hello-world.txt';
-//
-//        file_put_contents($destination, 'Old content!');
-//
-//        try {
-//            (new CurlDownloader())
-//                ->updateIfExists()
-//                ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
-//
-//            static::fail('Expected RuntimeException was not thrown');
-//        } catch (RuntimeException $e) {
-//            static::assertStringEqualsFile($destination, 'Old content!');
-//        }
-//    }
+    /** @test */
+    public function it_can_update_content_when_file_already_exists_and_has_older_modification_date()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $destination = $storage.'/hello-world.txt';
+
+        file_put_contents($destination, 'Old content!');
+
+        touch($destination, DateTime::createFromFormat('m/d/Y', '1/10/2014')->getTimestamp());
+
+        $destination = (new CurlDownloader())
+            ->updateIfExists()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+
+        static::assertEquals($storage.'/hello-world.txt', $destination);
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_does_not_update_content_when_file_already_exists_and_has_newer_modification_date()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $destination = $storage.'/hello-world.txt';
+
+        file_put_contents($destination, 'Old content!');
+
+        $destination = (new CurlDownloader())
+            ->updateIfExists()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+
+        static::assertEquals($storage.'/hello-world.txt', $destination);
+        static::assertStringEqualsFile($destination, 'Old content!');
+    }
 
     /** @test */
     public function it_can_replace_content_when_file_already_exists()

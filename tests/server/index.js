@@ -15,8 +15,16 @@ http.createServer(function (req, res) {
                 res.end(JSON.stringify(err));
                 return;
             }
-            res.writeHead(200);
-            res.end(data);
+
+            fs.stat(__dirname + req.url, function (err, stats) {
+                if ((new Date(stats.mtime).getTime()) > (req.headers['if-modified-since'] ? new Date(req.headers['if-modified-since']).getTime() : 0)) {
+                    res.writeHead(200, { 'Last-Modified': new Date(stats.mtime).toUTCString() });
+                    res.end(data);
+                } else {
+                    res.writeHead(304);
+                    res.end();
+                }
+            })
         });
     } else if (req.url.startsWith('/private')) {
         if (req.headers.authorization === `Basic ${btoa('client:secret')}`) {

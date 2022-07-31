@@ -3,13 +3,16 @@
 namespace Nevadskiy\Downloader;
 
 use InvalidArgumentException;
+use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
+use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\FileNotModifiedException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
 use RuntimeException;
 use function dirname;
 use const DIRECTORY_SEPARATOR;
 
+// TODO: reorder methods (and review doc blocks)
 class CurlDownloader implements Downloader
 {
     /**
@@ -36,6 +39,11 @@ class CurlDownloader implements Downloader
      * Default permissions for created destination directory.
      */
     const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
+
+    /**
+     * A status code of the "Not Modified" response.
+     */
+    const HTTP_NOT_MODIFIED = 304;
 
     /**
      * The cURL request headers.
@@ -152,6 +160,8 @@ class CurlDownloader implements Downloader
 
     /**
      * Create destination directory when it is missing.
+     *
+     * @TODO: rename (consider "forceDirectory")
      */
     public function createDirectory(bool $recursive = false, int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
     {
@@ -221,31 +231,9 @@ class CurlDownloader implements Downloader
 
         $path = $this->getDestinationPath($url, $destination);
 
-        // TODO: can be refactored by FileAlreadyExists exception that handles differently based on mode.
+        $this->performDownload($path, $url);
 
-        $headers = [];
-
-        if (file_exists($path)) {
-            if ($this->clobberMode === self::CLOBBER_MODE_FAIL) {
-                throw new RuntimeException(sprintf('File "%s" already exists', $path));
-            }
-
-            if ($this->clobberMode === self::CLOBBER_MODE_SKIP) {
-                return $this->normalizePath($path);
-            }
-
-            if ($this->clobberMode === self::CLOBBER_MODE_UPDATE) {
-                $headers = $this->getLastModificationHeader($path);
-            }
-        }
-
-        try {
-            $this->performDownload($path, $url, $headers);
-
-            return $this->normalizePath($path);
-        } catch (FileNotModifiedException $e) {
-            return $this->normalizePath($path);
-        }
+        return $this->normalizePath($path);
     }
 
     /**
@@ -301,40 +289,98 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Determine if it should return a file when it is already exists.
+     * Perform the file download process to the given path using the given url and headers.
      */
-    protected function shouldReturnExistingFile(string $path): bool
+    protected function performDownload(string $path, string $url, array $headers = [])
     {
-        if (! file_exists($path)) {
-            return false;
+        try {
+            $this->ensureFileNotExists($path);
+        } catch (FileExistsException $e) {
+            if ($this->clobberMode === self::CLOBBER_MODE_FAIL) {
+                throw $e;
+            }
+
+            if ($this->clobberMode === self::CLOBBER_MODE_SKIP) {
+                return;
+            }
+
+            if ($this->clobberMode === self::CLOBBER_MODE_UPDATE) {
+                $headers = array_merge($headers, $this->getLastModificationHeader($path));
+            }
         }
 
-        if ($this->clobberMode === self::CLOBBER_MODE_FAIL) {
-            throw new RuntimeException(sprintf('File "%s" already exists', $path));
+        try {
+            $this->writeStream($path, $url, $headers);
+        } catch (FileNotModifiedException $e) {
+            return;
         }
-
-        if ($this->clobberMode === self::CLOBBER_MODE_SKIP) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
-     * Get a directory from the given path.
+     * Ensure that file not exists at the given path.
      */
-    protected function ensureDestinationDirectoryExists(string $directory)
+    protected function ensureFileNotExists(string $path)
     {
-        if (is_dir($directory)) {
-            return;
+        if (file_exists($path)) {
+            throw new FileExistsException($path);
+        }
+    }
+
+    /**
+     * Get the last modification header.
+     */
+    protected function getLastModificationHeader(string $path): array
+    {
+        return ['If-Modified-Since' => gmdate('D, d M Y H:i:s T', filemtime($path))];
+    }
+
+    /**
+     * Write a stream using the URL and HTTP headers to the given path.
+     */
+    protected function writeStream(string $path, string $url, array $headers)
+    {
+        $tempFile = new TempFile($this->getDestinationDirectory($path));
+
+        try {
+            $tempFile->writeUsing(function ($stream) use ($url, $headers) {
+                $this->writeStreamUsingCurl($stream, $url, $headers);
+            });
+
+            $tempFile->save($path);
+        } catch (NetworkException $e) {
+            $tempFile->delete();
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Get the destination directory by the given file path.
+     */
+    protected function getDestinationDirectory(string $file): string
+    {
+        $directory = dirname($file);
+
+        try {
+            $this->ensureDirectoryExists($directory);
+        } catch (DirectoryMissingException $e) {
+            if ($this->createsDirectory) {
+                $this->performCreateDirectory($directory);
+            } else {
+                throw $e;
+            }
         }
 
-        if (! $this->createsDirectory) {
-            throw new RuntimeException(sprintf('Directory "%s" does not exist', $directory));
-        }
+        return $directory;
+    }
 
-        if (! mkdir($directory, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($directory)) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $directory));
+    /**
+     * Ensure that the directory exists at the given path.
+     */
+    protected function ensureDirectoryExists(string $path)
+    {
+        if (! is_dir($path)) {
+            throw new DirectoryMissingException($path);
         }
     }
 
@@ -362,13 +408,12 @@ class CurlDownloader implements Downloader
 
         $response = curl_exec($ch);
 
-        // TODO: refactor error structure.
+        // TODO: refactor error structure (use {} finally to curl_close).
         $error = $response === false
             ? new NetworkException(curl_error($ch))
             : null;
 
-        // TODO: use 304 response code constant.
-        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 304) {
+        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === self::HTTP_NOT_MODIFIED) {
             // TODO: refactor error structure.
             $error = new FileNotModifiedException();
         }
@@ -397,26 +442,12 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * Perform the file download process to the given path using the given url and headers.
+     * @TODO: rename
      */
-    protected function performDownload(string $path, string $url, array $headers)
+    protected function performCreateDirectory(string $directory)
     {
-        $directory = dirname($path);
-
-        $this->ensureDestinationDirectoryExists($directory);
-
-        $tempFile = new TempFile($directory);
-
-        try {
-            $tempFile->writeUsing(function ($stream) use ($url, $headers) {
-                $this->writeStreamUsingCurl($stream, $url, $headers);
-            });
-
-            $tempFile->save($path);
-        } catch (DownloaderException $e) {
-            $tempFile->delete();
-
-            throw $e;
+        if (! mkdir($directory, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($directory)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $directory));
         }
     }
 
@@ -426,13 +457,5 @@ class CurlDownloader implements Downloader
     protected function normalizePath(string $path): string
     {
         return realpath($path);
-    }
-
-    /**
-     * Get the last modification header.
-     */
-    protected function getLastModificationHeader(string $path): array
-    {
-        return ['If-Modified-Since' => gmdate('D, d M Y H:i:s T', filemtime($path))];
     }
 }

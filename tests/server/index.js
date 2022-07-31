@@ -20,15 +20,6 @@ http.createServer(function (req, res) {
                 const lastModifiedAt = new Date(stats.mtime)
                 lastModifiedAt.setMilliseconds(0);
 
-                console.log(req.headers['if-modified-since'])
-                console.log(req.headers['if-modified-since'])
-                // console.log(`req.headers['if-modified-since']`)
-                // console.log(req.headers['if-modified-since'])
-                // console.log(new Date(req.headers['if-modified-since'] || 0).getTime())
-                // console.log(lastModifiedAt.getTime())
-                // console.log(lastModifiedAt.toUTCString())
-                // console.log(stats.mtime)
-
                 if (! req.headers['if-modified-since']) {
                     res.writeHead(200, { 'Last-Modified': lastModifiedAt.toUTCString() });
                     res.end(data);

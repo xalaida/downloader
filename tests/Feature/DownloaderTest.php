@@ -5,6 +5,7 @@ namespace Nevadskiy\Downloader\Tests\Feature;
 use DateTime;
 use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
+use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
@@ -48,7 +49,7 @@ class DownloaderTest extends TestCase
                 $storage.'/missing-file.txt'
             );
 
-            static::fail('Expected DownloaderException was not thrown');
+            static::fail('Expected NetworkException was not thrown');
         } catch (NetworkException $e) {
             static::assertDirectoryIsEmpty($storage);
         }
@@ -75,7 +76,7 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(DirectoryMissingException::class);
 
         (new CurlDownloader())->download(
             $this->serverUrl('/fixtures/hello-world.txt'),

@@ -4,7 +4,6 @@ namespace Nevadskiy\Downloader;
 
 use InvalidArgumentException;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
-use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
@@ -39,11 +38,6 @@ class CurlDownloader implements Downloader
      * Default permissions for created destination directory.
      */
     const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
-
-    /**
-     * A status code of the "Not Modified" response.
-     */
-    const HTTP_NOT_MODIFIED = 304;
 
     /**
      * The cURL request headers.
@@ -364,11 +358,11 @@ class CurlDownloader implements Downloader
         try {
             $this->ensureDirectoryExists($directory);
         } catch (DirectoryMissingException $e) {
-            if ($this->createsDirectory) {
-                $this->performCreateDirectory($directory);
-            } else {
+            if (! $this->createsDirectory) {
                 throw $e;
             }
+
+            $this->performCreateDirectory($directory);
         }
 
         return $directory;
@@ -385,10 +379,19 @@ class CurlDownloader implements Downloader
     }
 
     /**
+     * @TODO: rename
+     */
+    protected function performCreateDirectory(string $directory)
+    {
+        if (! mkdir($directory, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($directory)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $directory));
+        }
+    }
+
+    /**
      * Write a stream using cURL.
      *
      * @param resource $stream
-     * @return string|null
      */
     protected function writeStreamUsingCurl($stream, string $url, array $headers = [])
     {
@@ -406,25 +409,19 @@ class CurlDownloader implements Downloader
             $handleCallbacks($ch);
         }
 
-        $response = curl_exec($ch);
+        try {
+            $response = curl_exec($ch);
 
-        // TODO: refactor error structure (use {} finally to curl_close).
-        $error = $response === false
-            ? new NetworkException(curl_error($ch))
-            : null;
+            if ($response === false) {
+                throw new NetworkException(curl_error($ch));
+            }
 
-        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === self::HTTP_NOT_MODIFIED) {
-            // TODO: refactor error structure.
-            $error = new ResponseNotModifiedException();
+            if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 403) {
+                throw new ResponseNotModifiedException();
+            }
+        } finally {
+            curl_close($ch);
         }
-
-        curl_close($ch);
-
-        if ($error) {
-            throw $error;
-        }
-
-        return $response;
     }
 
     /**
@@ -439,16 +436,6 @@ class CurlDownloader implements Downloader
         }
 
         return $normalized;
-    }
-
-    /**
-     * @TODO: rename
-     */
-    protected function performCreateDirectory(string $directory)
-    {
-        if (! mkdir($directory, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($directory)) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $directory));
-        }
     }
 
     /**

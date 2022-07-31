@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Small refactoring
 - Return path of downloaded file
+- Move exceptions to separate directory
 
 ## [0.1.0] - 2022-07-10
 ### Added

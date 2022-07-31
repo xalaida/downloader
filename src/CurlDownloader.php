@@ -6,7 +6,7 @@ use InvalidArgumentException;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
-use Nevadskiy\Downloader\Exceptions\FileNotModifiedException;
+use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
 use RuntimeException;
 use function dirname;
@@ -311,7 +311,7 @@ class CurlDownloader implements Downloader
 
         try {
             $this->writeStream($path, $url, $headers);
-        } catch (FileNotModifiedException $e) {
+        } catch (ResponseNotModifiedException $e) {
             return;
         }
     }
@@ -415,7 +415,7 @@ class CurlDownloader implements Downloader
 
         if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === self::HTTP_NOT_MODIFIED) {
             // TODO: refactor error structure.
-            $error = new FileNotModifiedException();
+            $error = new ResponseNotModifiedException();
         }
 
         curl_close($ch);

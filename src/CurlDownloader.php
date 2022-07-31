@@ -226,7 +226,7 @@ class CurlDownloader implements Downloader
         }
 
         // TODO: remove double "file_exists" check.
-        $headers = file_exists($path) && $this->clobberMode === self::CLOBBER_MODE_UPDATE ? ['If-Modified-Since' => gmdate('D, d M Y H:i:s T', filemtime($path))] : [];
+        $headers = file_exists($path) && $this->clobberMode === self::CLOBBER_MODE_UPDATE ? $this->getLastModificationHeader($path) : [];
 
         try {
             $this->performDownload($path, $url, $headers);
@@ -371,7 +371,10 @@ class CurlDownloader implements Downloader
         return $response;
     }
 
-    private function normalizeHeaders(array $headers): array
+    /**
+     * Normalize headers for cURL instance.
+     */
+    protected function normalizeHeaders(array $headers): array
     {
         $normalized = [];
 
@@ -382,17 +385,8 @@ class CurlDownloader implements Downloader
         return $normalized;
     }
 
-    public function normalizePath(string $path): string
-    {
-        return realpath($path);
-    }
-
     /**
-     * @param TempFile $tempFile
-     * @param string $url
-     * @param array $headers
-     * @param string $path
-     * @return string|void
+     * Perform the file download process to the given path using the given url and headers.
      */
     protected function performDownload(string $path, string $url, array $headers)
     {
@@ -413,5 +407,21 @@ class CurlDownloader implements Downloader
 
             throw $e;
         }
+    }
+
+    /**
+     * Normalize the path of the downloaded file.
+     */
+    protected function normalizePath(string $path): string
+    {
+        return realpath($path);
+    }
+
+    /**
+     * Get the last modification header.
+     */
+    protected function getLastModificationHeader(string $path): array
+    {
+        return ['If-Modified-Since' => gmdate('D, d M Y H:i:s T', filemtime($path))];
     }
 }

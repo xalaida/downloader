@@ -231,7 +231,7 @@ class DownloaderTest extends TestCase
         static::assertStringEqualsFile($destination, 'Old content!');
     }
 
-//    TODO: feature this test based on header size
+//    TODO: feature this test based on If-Modified-Since header
 //    /** @test */
 //    public function it_can_update_content_when_file_already_exists()
 //    {
@@ -243,7 +243,7 @@ class DownloaderTest extends TestCase
 //
 //        try {
 //            (new CurlDownloader())
-//                ->failIfExists()
+//                ->updateIfExists()
 //                ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 //
 //            static::fail('Expected RuntimeException was not thrown');

@@ -17,8 +17,14 @@ http.createServer(function (req, res) {
             }
 
             fs.stat(__dirname + req.url, function (err, stats) {
-                if ((new Date(stats.mtime).getTime()) > (req.headers['if-modified-since'] ? new Date(req.headers['if-modified-since']).getTime() : 0)) {
-                    res.writeHead(200, { 'Last-Modified': new Date(stats.mtime).toUTCString() });
+                const lastModifiedAt = new Date(stats.mtime)
+                lastModifiedAt.setMilliseconds(0);
+
+                if (! req.headers['if-modified-since']) {
+                    res.writeHead(200, { 'Last-Modified': lastModifiedAt.toUTCString() });
+                    res.end(data);
+                } else if (lastModifiedAt.getTime() > (new Date(req.headers['if-modified-since']).getTime())) {
+                    res.writeHead(200, { 'Last-Modified': lastModifiedAt.toUTCString() });
                     res.end(data);
                 } else {
                     res.writeHead(304);

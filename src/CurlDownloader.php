@@ -312,6 +312,7 @@ class CurlDownloader implements Downloader
 
         if ($this->clobberMode === self::CLOBBER_MODE_UPDATE) {
             // TODO: feature update check.
+            return true;
         }
 
         return false;

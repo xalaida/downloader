@@ -221,12 +221,23 @@ class CurlDownloader implements Downloader
 
         $path = $this->getDestinationPath($url, $destination);
 
-        if ($this->shouldReturnExistingFile($path)) {
-            return $path;
-        }
+        // TODO: can be refactored by FileAlreadyExists exception that handles differently based on mode.
 
-        // TODO: remove double "file_exists" check.
-        $headers = file_exists($path) && $this->clobberMode === self::CLOBBER_MODE_UPDATE ? $this->getLastModificationHeader($path) : [];
+        $headers = [];
+
+        if (file_exists($path)) {
+            if ($this->clobberMode === self::CLOBBER_MODE_FAIL) {
+                throw new RuntimeException(sprintf('File "%s" already exists', $path));
+            }
+
+            if ($this->clobberMode === self::CLOBBER_MODE_SKIP) {
+                return $this->normalizePath($path);
+            }
+
+            if ($this->clobberMode === self::CLOBBER_MODE_UPDATE) {
+                $headers = $this->getLastModificationHeader($path);
+            }
+        }
 
         try {
             $this->performDownload($path, $url, $headers);

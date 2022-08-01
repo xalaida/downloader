@@ -11,7 +11,6 @@ use RuntimeException;
 use function dirname;
 use const DIRECTORY_SEPARATOR;
 
-// TODO: reorder methods (and review doc blocks)
 class CurlDownloader implements Downloader
 {
     /**
@@ -38,6 +37,13 @@ class CurlDownloader implements Downloader
      * Default permissions for created destination directory.
      */
     const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
+
+    /**
+     * Indicates the base directory to use to create the destination path.
+     *
+     * @var string
+     */
+    protected $baseDirectory;
 
     /**
      * The cURL request headers.
@@ -85,13 +91,6 @@ class CurlDownloader implements Downloader
      * @var int
      */
     protected $directoryPermissions = self::DEFAULT_DIRECTORY_PERMISSIONS;
-
-    /**
-     * Indicates the base directory to use to create the destination path.
-     *
-     * @var string
-     */
-    protected $baseDirectory;
 
     /**
      * Make a new downloader instance.
@@ -154,10 +153,8 @@ class CurlDownloader implements Downloader
 
     /**
      * Create destination directory when it is missing.
-     *
-     * @TODO: rename (consider "forceDirectory")
      */
-    public function createDirectory(bool $recursive = false, int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
+    public function allowDirectoryCreation(bool $recursive = false, int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
     {
         $this->createsDirectory = true;
         $this->createsDirectoryRecursively = $recursive;
@@ -169,9 +166,9 @@ class CurlDownloader implements Downloader
     /**
      * Recursively create destination directory when it is missing.
      */
-    public function createDirectoryRecursively(int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
+    public function allowRecursiveDirectoryCreation(int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
     {
-        return $this->createDirectory(true, $permissions);
+        return $this->allowDirectoryCreation(true, $permissions);
     }
 
     /**
@@ -362,7 +359,7 @@ class CurlDownloader implements Downloader
                 throw $e;
             }
 
-            $this->performCreateDirectory($directory);
+            $this->createDirectory($directory);
         }
 
         return $directory;
@@ -379,12 +376,12 @@ class CurlDownloader implements Downloader
     }
 
     /**
-     * @TODO: rename
+     * Create a directory using the given path.
      */
-    protected function performCreateDirectory(string $directory)
+    protected function createDirectory(string $path)
     {
-        if (! mkdir($directory, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($directory)) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $directory));
+        if (! mkdir($path, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($path)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
         }
     }
 
@@ -397,10 +394,8 @@ class CurlDownloader implements Downloader
     {
         $ch = curl_init($url);
 
-        // TODO: make this option reserved.
         curl_setopt($ch, CURLOPT_FILE, $stream);
 
-        // TODO: make this option reserved.
         curl_setopt($ch, CURLOPT_HTTPHEADER, $this->normalizeHeaders(array_merge($this->headers, $headers)));
 
         curl_setopt_array($ch, $this->curlOptions);
@@ -416,7 +411,7 @@ class CurlDownloader implements Downloader
                 throw new NetworkException(curl_error($ch));
             }
 
-            if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 403) {
+            if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 304) {
                 throw new ResponseNotModifiedException();
             }
         } finally {

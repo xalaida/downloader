@@ -105,7 +105,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $destination = (new CurlDownloader())
-            ->createDirectory()
+            ->allowDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $storage.'/files/hello-world.txt');
 
         static::assertEquals($storage.'/files/hello-world.txt', $destination);
@@ -119,7 +119,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $destination = (new CurlDownloader())
-            ->createDirectoryRecursively()
+            ->allowRecursiveDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $storage.'/files/2022/07/26/hello-world.txt');
 
         static::assertEquals($storage.'/files/2022/07/26/hello-world.txt', $destination);
@@ -133,7 +133,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $destination = (new CurlDownloader())
-            ->createDirectoryRecursively()
+            ->allowRecursiveDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $storage.'/files/2022/07/26/');
 
         static::assertEquals($storage.'/files/2022/07/26/hello-world.txt', $destination);
@@ -147,7 +147,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $destination = (new CurlDownloader())
-            ->createDirectoryRecursively()
+            ->allowRecursiveDirectoryCreation()
             ->baseDirectory($storage)
             ->download($this->serverUrl('/fixtures/hello-world.txt'), 'files/hello-world.txt');
 
@@ -162,7 +162,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $destination = (new CurlDownloader())
-            ->createDirectoryRecursively()
+            ->allowRecursiveDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $storage.'/files/2022/07/26/.');
 
         static::assertEquals($storage.'/files/2022/07/26/hello-world.txt', $destination);
@@ -189,7 +189,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $destination = (new CurlDownloader())
-            ->createDirectoryRecursively()
+            ->allowRecursiveDirectoryCreation()
             ->baseDirectory($storage)
             ->download($this->serverUrl('/fixtures/hello-world.txt'));
 

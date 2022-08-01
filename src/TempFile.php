@@ -17,35 +17,17 @@ class TempFile
     /**
      * Make a new temp file instance.
      */
-    public function __construct(string $directory = null)
+    public function __construct(string $directory = null, bool $handleShutdown = true)
     {
         $directory = $directory ?: sys_get_temp_dir();
 
         $this->ensureDirectoryIsWritable($directory);
 
         $this->path = tempnam($directory, 'tmp_');
-    }
 
-    /**
-     * Get a path of the file.
-     *
-     * @return string|null
-     */
-    public function getPath()
-    {
-        return $this->path;
-    }
-
-    /**
-     * Determine if the temp file instance is destroyed.
-     */
-    public function destroyed(): bool
-    {
-        if (! $this->path) {
-            return true;
+        if ($handleShutdown) {
+            $this->reginsterShutdownHandler();
         }
-
-        return false;
     }
 
     /**
@@ -91,7 +73,7 @@ class TempFile
             throw new RuntimeException(sprintf('Could not rename a "%s" file', $this->path));
         }
 
-        $this->path = null;
+        $this->markAsDestroyed();
     }
 
     /**
@@ -113,7 +95,17 @@ class TempFile
             throw new RuntimeException(sprintf('Could not delete a "%s" file', $this->path));
         }
 
-        $this->path = null;
+        $this->markAsDestroyed();
+    }
+
+    /**
+     * Get a path of the file.
+     *
+     * @return string|null
+     */
+    public function getPath()
+    {
+        return $this->path;
     }
 
     /**
@@ -127,6 +119,24 @@ class TempFile
     }
 
     /**
+     * Register the shutdown handler.
+     */
+    protected function reginsterShutdownHandler()
+    {
+        register_shutdown_function(static function(string $path) {
+            @unlink($path);
+        }, $this->path);
+    }
+
+    /**
+     * Mark the temp file instance as destroyed.
+     */
+    protected function markAsDestroyed()
+    {
+        $this->path = null;
+    }
+
+    /**
      * Ensure that the temp file instance is not destroyed.
      */
     protected function ensureNotDestroyed()
@@ -134,6 +144,18 @@ class TempFile
         if ($this->destroyed()) {
             throw new RuntimeException('The TempFile instance is destroyed');
         }
+    }
+
+    /**
+     * Determine if the temp file instance is destroyed.
+     */
+    protected function destroyed(): bool
+    {
+        if (! $this->path) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

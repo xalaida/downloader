@@ -216,11 +216,11 @@ class CurlDownloader implements Downloader
     /**
      * @inheritdoc
      */
-    public function download(string $url, string $destination = './'): string
+    public function download(string $url, string $destination = null): string
     {
         $this->ensureUrlIsValid($url);
 
-        $path = $this->getDestinationPath($url, $destination);
+        $path = $this->getDestinationPath($url, $destination ?: '.' . DIRECTORY_SEPARATOR);
 
         $this->performDownload($path, $url);
 

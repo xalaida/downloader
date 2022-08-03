@@ -6,9 +6,9 @@ use DateTime;
 use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
+use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
 use Nevadskiy\Downloader\Tests\TestCase;
-use RuntimeException;
 
 class DownloaderTest extends TestCase
 {
@@ -39,7 +39,7 @@ class DownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_throws_exception_for_wrong_url_that_returns_http_error()
+    public function it_throws_exception_for_url_that_returns_http_error()
     {
         $storage = $this->prepareStorageDirectory();
 
@@ -65,7 +65,7 @@ class DownloaderTest extends TestCase
         try {
             (new CurlDownloader())->download('invalid-url', $destination);
 
-            static::fail('Expected RuntimeException was not thrown');
+            static::fail('Expected InvalidArgumentException was not thrown');
         } catch (InvalidArgumentException $e) {
             static::assertFileNotExists($destination);
         }
@@ -76,12 +76,16 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $this->expectException(DirectoryMissingException::class);
+        try {
+            (new CurlDownloader())->download(
+                $this->serverUrl('/fixtures/hello-world.txt'),
+                $storage.'/files/hello-world.txt'
+            );
 
-        (new CurlDownloader())->download(
-            $this->serverUrl('/fixtures/hello-world.txt'),
-            $storage.'/files/hello-world.txt'
-        );
+            static::fail('Expected DirectoryMissingException was not thrown');
+        } catch (DirectoryMissingException $e) {
+            self::assertEquals($storage.'/files', $e->getPath());
+        }
     }
 
     /** @test */
@@ -208,10 +212,12 @@ class DownloaderTest extends TestCase
         file_put_contents($destination, 'Old content!');
 
         try {
-            (new CurlDownloader())->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+            (new CurlDownloader())
+                ->failIfExists()
+                ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
-            static::fail('Expected RuntimeException was not thrown');
-        } catch (RuntimeException $e) {
+            static::fail('Expected FileExistsException was not thrown');
+        } catch (FileExistsException $e) {
             static::assertStringEqualsFile($destination, 'Old content!');
         }
     }

@@ -409,9 +409,7 @@ class CurlDownloader implements Downloader
      */
     protected function createDirectory(string $path)
     {
-         if (false === @mkdir($path, $this->directoryPermissions, $this->createsDirectoryRecursively)) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
-         }
+        mkdir($path, $this->directoryPermissions, $this->createsDirectoryRecursively);
     }
 
     /**

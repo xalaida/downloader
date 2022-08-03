@@ -5,6 +5,7 @@ namespace Nevadskiy\Downloader\Tests;
 use Nevadskiy\Downloader\Tests\Constraint\DirectoryIsEmpty;
 use Nevadskiy\Downloader\Tests\Uses\TestingDirectory;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use const DIRECTORY_SEPARATOR;
 
 class TestCase extends BaseTestCase
 {

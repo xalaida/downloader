@@ -7,7 +7,6 @@ use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
-use RuntimeException;
 use function dirname;
 use const DIRECTORY_SEPARATOR;
 
@@ -114,7 +113,7 @@ class CurlDownloader implements Downloader
     /**
      * Throw an exception if the file already exists.
      */
-    public function failIfExists(): CurlDownloader
+    public function failIfExists(): self
     {
         $this->clobberMode = self::CLOBBER_MODE_FAIL;
 
@@ -124,7 +123,7 @@ class CurlDownloader implements Downloader
     /**
      * Skip downloading if the file already exists.
      */
-    public function skipIfExists(): CurlDownloader
+    public function skipIfExists(): self
     {
         $this->clobberMode = self::CLOBBER_MODE_SKIP;
 
@@ -134,7 +133,7 @@ class CurlDownloader implements Downloader
     /**
      * Update contents if the existing file is different from the downloaded one.
      */
-    public function updateIfExists(): CurlDownloader
+    public function updateIfExists(): self
     {
         $this->clobberMode = self::CLOBBER_MODE_UPDATE;
 
@@ -144,7 +143,7 @@ class CurlDownloader implements Downloader
     /**
      * Replace contents if file already exists.
      */
-    public function replaceIfExists(): CurlDownloader
+    public function replaceIfExists(): self
     {
         $this->clobberMode = self::CLOBBER_MODE_REPLACE;
 
@@ -154,7 +153,7 @@ class CurlDownloader implements Downloader
     /**
      * Create destination directory when it is missing.
      */
-    public function allowDirectoryCreation(bool $recursive = false, int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
+    public function allowDirectoryCreation(bool $recursive = false, int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): self
     {
         $this->createsDirectory = true;
         $this->createsDirectoryRecursively = $recursive;
@@ -166,7 +165,7 @@ class CurlDownloader implements Downloader
     /**
      * Recursively create destination directory when it is missing.
      */
-    public function allowRecursiveDirectoryCreation(int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): CurlDownloader
+    public function allowRecursiveDirectoryCreation(int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): self
     {
         return $this->allowDirectoryCreation(true, $permissions);
     }
@@ -174,7 +173,7 @@ class CurlDownloader implements Downloader
     /**
      * Specify the base directory to use to create the destination path.
      */
-    public function baseDirectory(string $directory): CurlDownloader
+    public function baseDirectory(string $directory): self
     {
         $this->baseDirectory = rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
@@ -184,7 +183,7 @@ class CurlDownloader implements Downloader
     /**
      * Add a cURL option with the given value.
      */
-    public function withCurlOption($option, $value): CurlDownloader
+    public function withCurlOption($option, $value): self
     {
         $this->curlOptions[$option] = $value;
 
@@ -194,7 +193,7 @@ class CurlDownloader implements Downloader
     /**
      * Add a cURL handle callback.
      */
-    public function withCurlHandle(callable $callback): CurlDownloader
+    public function withCurlHandle(callable $callback): self
     {
         $this->curlHandleCallbacks[] = $callback;
 
@@ -204,7 +203,7 @@ class CurlDownloader implements Downloader
     /**
      * Add headers to the cURL request.
      */
-    public function withHeaders(array $headers): CurlDownloader
+    public function withHeaders(array $headers): self
     {
         foreach ($headers as $name => $value) {
             $this->headers[$name] = $value;
@@ -216,7 +215,7 @@ class CurlDownloader implements Downloader
     /**
      * Specify the progress callback.
      */
-    public function onProgress(callable $callback): CurlDownloader
+    public function onProgress(callable $callback): self
     {
         $this->withCurlOption(CURLOPT_NOPROGRESS, false);
 

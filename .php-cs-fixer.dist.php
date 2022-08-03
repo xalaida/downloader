@@ -12,6 +12,7 @@ $config->setRules([
     'php_unit_test_annotation' => [
         'style' => 'annotation',
     ],
+    'no_unused_imports' => true,
 ]);
 
 $config->setRiskyAllowed(true);

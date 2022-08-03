@@ -17,17 +17,13 @@ class TempFile
     /**
      * Make a new temp file instance.
      */
-    public function __construct(string $directory = null, bool $handleShutdown = true)
+    public function __construct(string $directory = null)
     {
         $directory = $directory ?: sys_get_temp_dir();
 
         $this->ensureDirectoryIsWritable($directory);
 
         $this->path = tempnam($directory, 'tmp_');
-
-        if ($handleShutdown) {
-            $this->reginsterShutdownHandler();
-        }
     }
 
     /**
@@ -35,20 +31,14 @@ class TempFile
      */
     public function writeUsing(callable $callback)
     {
-        $this->ensureNotDestroyed();
+        $this->ensureNotDeleted();
 
         $stream = fopen($this->path, 'wb+');
 
         try {
-            $result = $callback($stream);
-
+            return $callback($stream);
+        } finally {
             fclose($stream);
-
-            return $result;
-        } catch (Exception $e) {
-            fclose($stream);
-
-            throw $e;
         }
     }
 
@@ -67,13 +57,13 @@ class TempFile
      */
     public function persist(string $path)
     {
-        $this->ensureNotDestroyed();
+        $this->ensureNotDeleted();
 
         if (false === @rename($this->path, $path)) {
             throw new RuntimeException(sprintf('Could not rename a "%s" file to "%s"', $this->path, $path));
         }
 
-        $this->markAsDestroyed();
+        $this->markAsDeleted();
     }
 
     /**
@@ -89,13 +79,13 @@ class TempFile
      */
     public function delete()
     {
-        $this->ensureNotDestroyed();
+        $this->ensureNotDeleted();
 
         if (false === @unlink($this->path)) {
             throw new RuntimeException(sprintf('Could not delete a "%s" file', $this->path));
         }
 
-        $this->markAsDestroyed();
+        $this->markAsDeleted();
     }
 
     /**
@@ -113,43 +103,33 @@ class TempFile
      */
     public function __destruct()
     {
-        if (! $this->destroyed()) {
+        if (! $this->deleted()) {
             $this->delete();
         }
     }
 
     /**
-     * Register the shutdown handler.
+     * Mark the temp file instance as deleted.
      */
-    protected function reginsterShutdownHandler()
-    {
-        register_shutdown_function(static function(string $path) {
-            @unlink($path);
-        }, $this->path);
-    }
-
-    /**
-     * Mark the temp file instance as destroyed.
-     */
-    protected function markAsDestroyed()
+    protected function markAsDeleted()
     {
         $this->path = null;
     }
 
     /**
-     * Ensure that the temp file instance is not destroyed.
+     * Ensure that the temp file instance is not deleted.
      */
-    protected function ensureNotDestroyed()
+    protected function ensureNotDeleted()
     {
-        if ($this->destroyed()) {
-            throw new RuntimeException('The TempFile instance is destroyed');
+        if ($this->deleted()) {
+            throw new RuntimeException('The TempFile instance is deleted');
         }
     }
 
     /**
-     * Determine if the temp file instance is destroyed.
+     * Determine if the temp file instance is deleted.
      */
-    protected function destroyed(): bool
+    protected function deleted(): bool
     {
         if (! $this->path) {
             return true;

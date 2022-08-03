@@ -242,13 +242,27 @@ class CurlDownloader implements Downloader
      */
     protected function getDestinationPath(string $url, string $destination): string
     {
-        $destination = $this->getDestinationInBaseDirectory(rtrim($destination, '.'));
+        $destination = $this->getDestinationInBaseDirectory(
+            $this->sanitizeDestination($destination)
+        );
 
         if (! $this->isDirectory($destination)) {
             return $destination;
         }
 
         return rtrim($destination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->getFileNameByUrl($url);
+    }
+
+    /**
+     * Sanitize the destination path.
+     */
+    protected function sanitizeDestination(string $destination): string
+    {
+        if (mb_substr($destination, -2) === DIRECTORY_SEPARATOR . '.') {
+            return mb_substr($destination, 0, -1);
+        }
+
+        return $destination;
     }
 
     /**
@@ -260,7 +274,7 @@ class CurlDownloader implements Downloader
             return $destination;
         }
 
-        return $this->baseDirectory . ltrim($destination, DIRECTORY_SEPARATOR . '.');
+        return $this->baseDirectory . ltrim($destination, DIRECTORY_SEPARATOR);
     }
 
     /**
@@ -268,7 +282,8 @@ class CurlDownloader implements Downloader
      */
     protected function isDirectory(string $destination): bool
     {
-        return is_dir($destination) || mb_substr($destination, -1) === DIRECTORY_SEPARATOR;
+        return is_dir($destination)
+            || mb_substr($destination, -1) === DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -380,9 +395,9 @@ class CurlDownloader implements Downloader
      */
     protected function createDirectory(string $path)
     {
-        if (! mkdir($path, $this->directoryPermissions, $this->createsDirectoryRecursively) && ! is_dir($path)) {
+         if (false === @mkdir($path, $this->directoryPermissions, $this->createsDirectoryRecursively)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
-        }
+         }
     }
 
     /**

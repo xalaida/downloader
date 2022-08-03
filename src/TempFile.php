@@ -70,7 +70,7 @@ class TempFile
         $this->ensureNotDestroyed();
 
         if (false === @rename($this->path, $path)) {
-            throw new RuntimeException(sprintf('Could not rename a "%s" file', $this->path));
+            throw new RuntimeException(sprintf('Could not rename a "%s" file to "%s"', $this->path, $path));
         }
 
         $this->markAsDestroyed();

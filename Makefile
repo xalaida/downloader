@@ -49,6 +49,14 @@ composer.outdated:
 autoload:
 	docker-compose run --rm app composer dump-autoload
 
+# Reinstall using a new runtime
+reinstall: clean install
+
+# Clean installation for the current runtime
+clean:
+	sudo rm -rf vendor
+	sudo rm composer.lock
+
 # Generate a coverage report as html
 coverage.html:
 	docker-compose run --rm app vendor/bin/phpunit --coverage-html tests/report

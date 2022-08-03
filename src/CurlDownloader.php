@@ -214,6 +214,20 @@ class CurlDownloader implements Downloader
     }
 
     /**
+     * Specify the progress callback.
+     */
+    public function onProgress(callable $callback): CurlDownloader
+    {
+        $this->withCurlOption(CURLOPT_NOPROGRESS, false);
+
+        $this->withCurlOption(CURLOPT_PROGRESSFUNCTION, function ($ch, int $total, int $loaded) use ($callback) {
+            $callback($total, $loaded);
+        });
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function download(string $url, string $destination = null): string

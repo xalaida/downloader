@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Possibility to create destination directory on the fly
 - Possibility to specify directory using linux path syntax
 - Possibility to specify base directory
+- Progress hook
 
 ### Changed
 - Small refactoring

@@ -363,4 +363,24 @@ class DownloaderTest extends TestCase
         static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
+
+    /** @test */
+    public function it_allows_to_specify_progress_hook()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $loaded = 0;
+
+        $destination = (new CurlDownloader())
+            ->onProgress(function (int $t, int $l) use (&$loaded) {
+                $loaded = $l;
+            })
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $storage.'/hello-world.txt');
+
+        self::assertEquals(13, $loaded);
+
+        static::assertEquals($storage.'/hello-world.txt', $destination);
+        static::assertFileExists($destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
 }

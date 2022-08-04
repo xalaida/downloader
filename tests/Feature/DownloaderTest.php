@@ -327,6 +327,7 @@ class DownloaderTest extends TestCase
         $url = $this->serverUrl('/redirect/hello-world.txt');
 
         $destination = (new CurlDownloader())
+            ->followRedirects()
             ->withCurlHandle(function ($ch) use ($url) {
                 static::assertSame($url, curl_getinfo($ch, CURLINFO_EFFECTIVE_URL));
             })
@@ -343,6 +344,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $destination = (new CurlDownloader())
+            ->followRedirects()
             ->withCurlOption(CURLOPT_HTTPHEADER, [
                 sprintf('Authorization: Basic %s', base64_encode('client:secret')),
             ])

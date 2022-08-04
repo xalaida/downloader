@@ -171,6 +171,8 @@ class CurlDownloader implements Downloader
 
     /**
      * Add a cURL option with the given value.
+     *
+     * @see: https://www.php.net/manual/en/function.curl-setopt.php
      */
     public function withCurlOption($option, $value): self
     {

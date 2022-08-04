@@ -2,7 +2,6 @@
 
 namespace Nevadskiy\Downloader;
 
-use Exception;
 use RuntimeException;
 
 class TempFile

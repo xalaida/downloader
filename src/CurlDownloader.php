@@ -96,18 +96,7 @@ class CurlDownloader implements Downloader
      */
     public function __construct(array $curlOptions = [])
     {
-        $this->curlOptions = $this->curlOptions() + $curlOptions;
-    }
-
-    /**
-     * The default cURL options.
-     */
-    protected function curlOptions(): array
-    {
-        return [
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_FOLLOWLOCATION => true,
-        ];
+        $this->curlOptions = $curlOptions;
     }
 
     /**
@@ -208,6 +197,17 @@ class CurlDownloader implements Downloader
         foreach ($headers as $name => $value) {
             $this->headers[$name] = $value;
         }
+
+        return $this;
+    }
+
+    /**
+     * Follow redirects that the server sends as a "Location" header.
+     */
+    public function followRedirects(int $maxRedirects = 20): self
+    {
+        $this->withCurlOption(CURLOPT_FOLLOWLOCATION, $maxRedirects !== 0);
+        $this->withCurlOption(CURLOPT_MAXREDIRS, $maxRedirects);
 
         return $this;
     }
@@ -421,6 +421,8 @@ class CurlDownloader implements Downloader
         $ch = curl_init($url);
 
         curl_setopt($ch, CURLOPT_FILE, $stream);
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, $this->normalizeHeaders(array_merge($this->headers, $headers)));
 

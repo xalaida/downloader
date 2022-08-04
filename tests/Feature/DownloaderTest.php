@@ -310,10 +310,9 @@ class DownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $destination = (new CurlDownloader())->download(
-            $this->serverUrl('/redirect/hello-world.txt'),
-            $storage.'/hello-world.txt'
-        );
+        $destination = (new CurlDownloader())
+            ->followRedirects()
+            ->download($this->serverUrl('/redirect/hello-world.txt'), $storage.'/hello-world.txt');
 
         static::assertSame($storage.'/hello-world.txt', $destination);
         static::assertFileExists($destination);
@@ -360,6 +359,7 @@ class DownloaderTest extends TestCase
         $storage = $this->prepareStorageDirectory();
 
         $destination = (new CurlDownloader())
+            ->followRedirects()
             ->withHeaders([
                 'Authorization' => sprintf('Basic %s', base64_encode('client:secret')),
             ])

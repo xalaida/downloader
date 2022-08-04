@@ -2,7 +2,6 @@
 
 namespace Nevadskiy\Downloader;
 
-use Exception;
 use RuntimeException;
 
 class TempFile
@@ -21,31 +20,9 @@ class TempFile
     {
         $directory = $directory ?: sys_get_temp_dir();
 
-        $this->ensureDirectoryWritable($directory);
+        $this->ensureDirectoryIsWritable($directory);
 
         $this->path = tempnam($directory, 'tmp_');
-    }
-
-    /**
-     * Get a path of the file.
-     *
-     * @return string|null
-     */
-    public function getPath()
-    {
-        return $this->path;
-    }
-
-    /**
-     * Determine if the temp file instance is destroyed.
-     */
-    public function destroyed(): bool
-    {
-        if (! $this->path) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -53,20 +30,14 @@ class TempFile
      */
     public function writeUsing(callable $callback)
     {
-        $this->ensureNotDestroyed();
+        $this->ensureNotDeleted();
 
         $stream = fopen($this->path, 'wb+');
 
         try {
-            $result = $callback($stream);
-
+            return $callback($stream);
+        } finally {
             fclose($stream);
-
-            return $result;
-        } catch (Exception $e) {
-            fclose($stream);
-
-            throw $e;
         }
     }
 
@@ -85,13 +56,13 @@ class TempFile
      */
     public function persist(string $path)
     {
-        $this->ensureNotDestroyed();
+        $this->ensureNotDeleted();
 
         if (false === @rename($this->path, $path)) {
-            throw new RuntimeException(sprintf('Could not rename a "%s" file', $this->path));
+            throw new RuntimeException(sprintf('Could not rename a "%s" file to "%s"', $this->path, $path));
         }
 
-        $this->path = null;
+        $this->markAsDeleted();
     }
 
     /**
@@ -107,13 +78,23 @@ class TempFile
      */
     public function delete()
     {
-        $this->ensureNotDestroyed();
+        $this->ensureNotDeleted();
 
         if (false === @unlink($this->path)) {
             throw new RuntimeException(sprintf('Could not delete a "%s" file', $this->path));
         }
 
-        $this->path = null;
+        $this->markAsDeleted();
+    }
+
+    /**
+     * Get a path of the file.
+     *
+     * @return string|null
+     */
+    public function getPath()
+    {
+        return $this->path;
     }
 
     /**
@@ -121,25 +102,45 @@ class TempFile
      */
     public function __destruct()
     {
-        if (! $this->destroyed()) {
+        if (! $this->deleted()) {
             $this->delete();
         }
     }
 
     /**
-     * Ensure that the temp file instance is not destroyed.
+     * Mark the temp file instance as deleted.
      */
-    protected function ensureNotDestroyed()
+    protected function markAsDeleted()
     {
-        if ($this->destroyed()) {
-            throw new RuntimeException('The TempFile instance is destroyed');
+        $this->path = null;
+    }
+
+    /**
+     * Ensure that the temp file instance is not deleted.
+     */
+    protected function ensureNotDeleted()
+    {
+        if ($this->deleted()) {
+            throw new RuntimeException('The TempFile instance is deleted');
         }
+    }
+
+    /**
+     * Determine if the temp file instance is deleted.
+     */
+    protected function deleted(): bool
+    {
+        if (! $this->path) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
      * Ensure the given directory exists and is writable.
      */
-    protected function ensureDirectoryWritable(string $directory)
+    protected function ensureDirectoryIsWritable(string $directory)
     {
         if (! is_dir($directory) || ! is_writable($directory)) {
             throw new RuntimeException(sprintf('The "%s" must be a writable directory', $directory));

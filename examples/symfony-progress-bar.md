@@ -41,23 +41,21 @@ class ConsoleProgressDownloader implements Downloader
         $this->downloader = $downloader;
         $this->output = $output;
 
-        $this->setUpCurl();
+        $this->setUpCurlDownloader();
     }
 
     /**
-     * Set up the cURL handle instance.
+     * Set up the cURL downloader instance.
      */
-    protected function setUpCurl()
+    protected function setUpCurlDownloader()
     {
-        $this->downloader->withCurlOption(CURLOPT_NOPROGRESS, false);
-
-        $this->downloader->withCurlOption(CURLOPT_PROGRESSFUNCTION, function ($ch, $downloadBytes, $downloadedBytes) {
-            if ($downloadBytes) {
-                $this->progress->setMaxSteps($downloadBytes);
+        $this->downloader->onProgress(function (int $total, int $loaded) {
+            if ($total) {
+                $this->progress->setMaxSteps($total);
             }
 
-            if ($downloadedBytes) {
-                $this->progress->setProgress($downloadedBytes);
+            if ($loaded) {
+                $this->progress->setProgress($loaded);
             }
         });
     }
@@ -65,20 +63,20 @@ class ConsoleProgressDownloader implements Downloader
     /**
      * @inheritdoc
      */
-    public function download(string $url, string $path)
+    public function download(string $url, string $destination = null)
     {
         $this->progress = $this->output->createProgressBar();
 
         $this->progress->start();
 
-        $this->downloader->download($url, $path);
+        $this->downloader->download($url, $destination);
 
         $this->progress->finish();
     }
 }
 ```
 
-It is a simple decorator for base `Downloader` instance.
+It is a simple decorator class for the base `Downloader` instance.
 
 Use it in the console command class:
 

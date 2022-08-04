@@ -3,14 +3,15 @@ FROM php:8.0-cli
 
 # Update dependencies
 RUN apt-get update \
+# Install Curl
+    && apt-get install -y libcurl3-dev curl \
+    && docker-php-ext-install curl \
 # Install Zip
     && apt-get install -y libzip-dev zip \
     && docker-php-ext-install zip \
-# Install Git
-    && apt-get install -y git \
-# Install Curl
-    && apt-get install -y libcurl3-dev curl \
-    && docker-php-ext-install curl
+# Install Xdebug
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug
 
 # Install composer
 ENV COMPOSER_ALLOW_SUPERUSER 1

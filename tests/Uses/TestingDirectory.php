@@ -4,6 +4,7 @@ namespace Nevadskiy\Downloader\Tests\Uses;
 
 use FilesystemIterator;
 
+// TODO: refactor with class based composition (new Directory)->prepare()
 trait TestingDirectory
 {
     /**

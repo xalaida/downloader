@@ -333,7 +333,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
      */
     protected function performDownload(string $path, string $url, array $headers = [])
     {
-        $this->logger->info('Start downloading file "{url}" to destination "{path}"', [
+        $this->logger->info('Downloading file "{url}" to destination "{path}"', [
             'url' => $url,
             'path' => $path
         ]);
@@ -361,7 +361,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
         try {
             $this->writeStream($path, $url, $headers);
 
-            $this->logger->info('Finish downloading file "{url}" to destination "{path}"', [
+            $this->logger->info('File "{url}" downloaded to destination "{path}"', [
                 'url' => $url,
                 'path' => $path
             ]);

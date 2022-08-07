@@ -1,6 +1,6 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Integration;
+namespace Nevadskiy\Downloader\Tests\Unit;
 
 use Nevadskiy\Downloader\TempFile;
 use Nevadskiy\Downloader\Tests\TestCase;

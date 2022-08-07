@@ -9,6 +9,10 @@ down:
 # Build docker containers
 install: build composer.install
 
+# Make a ".env" file based on the example file
+env:
+	cp .env.example .env
+
 # Build docker containers
 build:
 	docker-compose build

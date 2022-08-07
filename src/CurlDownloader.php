@@ -7,11 +7,16 @@ use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\NullLogger;
 use function dirname;
 use const DIRECTORY_SEPARATOR;
 
-class CurlDownloader implements Downloader
+class CurlDownloader implements Downloader, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * Throw an exception if the file already exists.
      */
@@ -97,6 +102,7 @@ class CurlDownloader implements Downloader
     public function __construct(array $curlOptions = [])
     {
         $this->curlOptions = $curlOptions;
+        $this->logger = new NullLogger();
     }
 
     /**
@@ -314,6 +320,11 @@ class CurlDownloader implements Downloader
      */
     protected function performDownload(string $path, string $url, array $headers = [])
     {
+        $this->logger->info('Downloading file "{url}" to destination "{path}"', [
+            'url' => $url,
+            'path' => $path
+        ]);
+
         try {
             $this->ensureFileNotExists($path);
         } catch (FileExistsException $e) {
@@ -322,17 +333,32 @@ class CurlDownloader implements Downloader
             }
 
             if ($this->clobberMode === self::CLOBBER_MODE_SKIP) {
+                $this->logger->notice('File "{file}" already exists, skip downloading', ['file' => $path]);
+
                 return;
             }
 
             if ($this->clobberMode === self::CLOBBER_MODE_UPDATE) {
+                $this->logger->notice('File "{file}" already exists, trying to update', ['file' => $path]);
+
                 $headers = array_merge($headers, $this->getLastModificationHeader($path));
             }
         }
 
         try {
             $this->writeStream($path, $url, $headers);
+
+            $this->logger->info('File "{url}" downloaded to destination "{path}"', [
+                'url' => $url,
+                'path' => $path
+            ]);
         } catch (ResponseNotModifiedException $e) {
+            $this->logger->notice('Remote file "{url}" has not been modified since the last time it was accessed', [
+                'file' => $path,
+                'url' => $url,
+                'headers' => $headers
+            ]);
+
             return;
         }
     }
@@ -388,6 +414,8 @@ class CurlDownloader implements Downloader
             if (! $this->createsDirectory) {
                 throw $e;
             }
+
+            $this->logger->notice('Creating missing directory "{directory}"', ['directory' => $directory]);
 
             $this->createDirectory($directory);
         }

@@ -9,7 +9,6 @@ use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
 use Nevadskiy\Downloader\Tests\TestCase;
-use Psr\Log\Test\TestLogger;
 
 class DownloaderTest extends TestCase
 {

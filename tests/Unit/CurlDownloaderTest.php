@@ -5,12 +5,16 @@ namespace Nevadskiy\Downloader\Tests\Unit;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Tests\Fake\FakeLogger;
 use Nevadskiy\Downloader\Tests\TestCase;
+use Psr\Log\Test\TestLogger;
 
 class CurlDownloaderTest extends TestCase
 {
     /** @test */
     public function it_uses_logger()
     {
+
+        TestLogger::
+
         $storage = $this->prepareStorageDirectory();
 
         $logger = new FakeLogger();

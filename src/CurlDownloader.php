@@ -44,13 +44,6 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
     const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
 
     /**
-     * The logger instance.
-     *
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
      * Indicates the base directory to use to create the destination path.
      *
      * @var string

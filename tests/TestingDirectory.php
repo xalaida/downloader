@@ -1,19 +1,18 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Uses;
+namespace Nevadskiy\Downloader\Tests;
 
 use FilesystemIterator;
 
-// TODO: refactor with class based composition (new Directory)->prepare()
-trait TestingDirectory
+class TestingDirectory
 {
     /**
      * Clean up the directory or create it if it is missing.
      */
-    protected function prepareDirectory(string $directory)
+    public function prepare(string $directory)
     {
         if (is_dir($directory)) {
-            $this->cleanDirectory($directory);
+            $this->clean($directory);
         } else {
             mkdir($directory, 0755, true);
         }
@@ -22,7 +21,7 @@ trait TestingDirectory
     /**
      * Clean up the given directory.
      */
-    protected function cleanDirectory(string $directory, bool $preserve = true)
+    public function clean(string $directory, bool $preserve = true)
     {
         if (! is_dir($directory)) {
             return;
@@ -32,7 +31,7 @@ trait TestingDirectory
 
         foreach ($items as $item) {
             if ($item->isDir() && ! $item->isLink()) {
-                $this->cleanDirectory($item->getPathname(), false);
+                $this->clean($item->getPathname(), false);
             } else {
                 @unlink($item->getPathname());
             }

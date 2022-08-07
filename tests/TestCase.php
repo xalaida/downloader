@@ -3,14 +3,11 @@
 namespace Nevadskiy\Downloader\Tests;
 
 use Nevadskiy\Downloader\Tests\Constraint\DirectoryIsEmpty;
-use Nevadskiy\Downloader\Tests\Uses\TestingDirectory;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use const DIRECTORY_SEPARATOR;
 
 class TestCase extends BaseTestCase
 {
-    use TestingDirectory;
-
     /**
      * Get a base URL of the server with fixture files.
      */
@@ -28,7 +25,7 @@ class TestCase extends BaseTestCase
     {
         $storage = __DIR__.'/storage';
 
-        $this->prepareDirectory($storage);
+        (new TestingDirectory())->prepare($storage);
 
         return $storage;
     }

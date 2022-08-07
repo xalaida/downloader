@@ -9,6 +9,7 @@ use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\NetworkException;
 use Nevadskiy\Downloader\Tests\TestCase;
+use Psr\Log\Test\TestLogger;
 
 class DownloaderTest extends TestCase
 {
@@ -390,5 +391,23 @@ class DownloaderTest extends TestCase
         static::assertSame($storage.'/hello-world.txt', $destination);
         static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_uses_logger()
+    {
+        $storage = $this->prepareStorageDirectory();
+
+        $logger = new TestLogger();
+
+        $downloader = new CurlDownloader();
+
+        $downloader->setLogger($logger);
+
+        $destination = $downloader->download($this->serverUrl('/fixtures/hello-world.txt'), $storage);
+
+        static::assertFileExists($destination);
+        static::assertTrue($logger->hasInfoThatContains('Downloading file "{url}" to destination "{path}"'));
+        static::assertTrue($logger->hasInfoThatContains('File "{url}" downloaded to destination "{path}"'));
     }
 }

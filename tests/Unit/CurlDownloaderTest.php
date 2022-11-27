@@ -15,7 +15,7 @@ class CurlDownloaderTest extends TestCase
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $logger->expects($this->exactly(2))
+        $logger->expects(static::exactly(2))
             ->method('info')
             ->withConsecutive(
                 ['Downloading file "{url}" to destination "{path}"'],

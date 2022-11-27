@@ -3,8 +3,8 @@
 namespace Nevadskiy\Downloader\Tests\Unit;
 
 use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\Tests\Fake\FakeLogger;
 use Nevadskiy\Downloader\Tests\TestCase;
+use Psr\Log\LoggerInterface;
 
 class CurlDownloaderTest extends TestCase
 {
@@ -13,7 +13,14 @@ class CurlDownloaderTest extends TestCase
     {
         $storage = $this->prepareStorageDirectory();
 
-        $logger = new FakeLogger();
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $logger->expects(static::exactly(2))
+            ->method('info')
+            ->withConsecutive(
+                ['Downloading file "{url}" to destination "{path}"'],
+                ['File "{url}" downloaded to destination "{path}"']
+            );
 
         $downloader = new CurlDownloader();
 
@@ -22,7 +29,5 @@ class CurlDownloaderTest extends TestCase
         $destination = $downloader->download($this->serverUrl('/fixtures/hello-world.txt'), $storage);
 
         static::assertFileExists($destination);
-        static::assertTrue($logger->hasMessage('Downloading file "{url}" to destination "{path}"', 'info'));
-        static::assertTrue($logger->hasMessage('File "{url}" downloaded to destination "{path}"', 'info'));
     }
 }

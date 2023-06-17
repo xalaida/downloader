@@ -16,10 +16,25 @@ class SimpleDownloader
     private $curl;
 
     /**
+     * The MIME types map to file extensions.
+     *
+     * @var array
+     */
+    private $mimeTypes;
+
+    /**
      * Make a new downloader instance.
      */
     public function __construct()
     {
+        $this->mimeTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'application/pdf' => 'pdf',
+            'text/plain' => 'txt',
+        ];
+
         $this->init();
     }
 
@@ -68,10 +83,19 @@ class SimpleDownloader
     }
 
     /**
+     * Add custom MIME types for extension detector.
+     */
+    public function mimeTypes(array $mimeTypes): self
+    {
+        $this->mimeTypes = array_merge($this->mimeTypes, $mimeTypes);
+
+        return $this;
+    }
+
+    /**
      * Download a file from the URL and save to the given path.
      *
      * @throws TransferException
-     * @throws RuntimeException
      */
     public function download(string $url, string $destination): string
     {
@@ -89,11 +113,11 @@ class SimpleDownloader
 
         $temp = tempnam($dir, 'tmp');
 
-        $finalUrl = $this->newFile($temp, function ($file) use ($url) {
+        $response = $this->newFile($temp, function ($file) use ($url) {
             return $this->transfer($url, $file);
         });
 
-        $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($finalUrl);
+        $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($response);
 
         rename($temp, $path);
 
@@ -126,11 +150,25 @@ class SimpleDownloader
     /**
      * Fetch URL and write to the file.
      */
-    protected function transfer(string $url, $file): string
+    protected function transfer(string $url, $file): array
     {
         curl_setopt_array($this->curl, [
             CURLOPT_URL => $url,
             CURLOPT_FILE => $file,
+            CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$filename, &$mime) {
+                if (stripos($header, 'Content-Disposition: attachment') !== false) {
+                    preg_match('/filename="(.+)"/', $header, $matches);
+                    if (isset($matches[1])) {
+                        $filename = $matches[1];
+                    }
+                }
+
+                if (stripos($header, 'Content-Type: ') !== false) {
+                    $mime = trim(str_ireplace('Content-Type: ', '', $header));
+                }
+
+                return strlen($header);
+            }
         ]);
 
         try {
@@ -140,7 +178,11 @@ class SimpleDownloader
                 throw new TransferException(curl_error($this->curl));
             }
 
-            return curl_getinfo($this->curl, CURLINFO_EFFECTIVE_URL);
+            return [
+                'url' => curl_getinfo($this->curl, CURLINFO_EFFECTIVE_URL),
+                'mime' => $mime,
+                'filename' => $filename,
+            ];
         } finally {
             $this->close();
         }
@@ -149,11 +191,37 @@ class SimpleDownloader
     /**
      * Guess filename from the given URL.
      */
-    protected function guessFilename(string $url): string
+    protected function guessFilename(array $response): string
     {
-        $path = parse_url($url, PHP_URL_PATH);
+        if ($response['filename']) {
+            return $response['filename'];
+        }
 
-        return pathinfo($path, PATHINFO_BASENAME) ?: $this->generateRandomFilename();
+        $path = parse_url($response['url'], PHP_URL_PATH);
+
+        $filename = pathinfo($path, PATHINFO_BASENAME) ?: $this->generateRandomFilename();
+
+        if (pathinfo($path, PATHINFO_EXTENSION)) {
+            return $filename;
+        }
+
+        $extension = $this->guessExtension($response['mime']);
+
+        if (! $extension) {
+            return $filename;
+        }
+
+        return $filename . '.' . $extension;
+    }
+
+    /**
+     * Guess a file extension by the MIME type.
+     *
+     * @todo use specific lib for that.
+     */
+    protected function guessExtension(string $mime = null)
+    {
+        return $this->mimeTypes[$mime] ?? null;
     }
 
     /**

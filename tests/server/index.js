@@ -1,10 +1,25 @@
-var fs = require('fs'),
-    http = require('http');
+var fs = require('fs');
+var http = require('http');
+var path = require('path');
 
 http.createServer(function (req, res) {
     if (req.url === '/') {
         res.write('Welcome home!');
         res.end();
+    } else if (req.url === '/hello-world') {
+        const filename = 'hello-world.txt';
+        const filePath = path.join(__dirname, 'fixtures', filename);
+
+        fs.readFile(filePath, function (err, data) {
+            if (err) {
+                res.writeHead(404);
+                res.end(JSON.stringify(err));
+                return;
+            }
+
+            res.setHeader('Content-Type', 'text/plain');
+            res.end(data);
+        });
     } else if (req.url === '/redirect') {
         res.writeHead(301, { 'Location': req.url.replace('/redirect', '/redirect/hello-world.txt') });
         res.end();
@@ -45,7 +60,7 @@ http.createServer(function (req, res) {
         }
     } else if (req.url.startsWith('/content')) {
         const filename = 'hello-world.txt';
-        const filepath = path.join(__dirname, filename);
+        const filepath = path.join(__dirname, 'fixtures', filename);
 
         fs.readFile(filepath, function (err, data) {
             if (err) {

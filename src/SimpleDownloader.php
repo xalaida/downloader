@@ -9,6 +9,67 @@ use Throwable;
 class SimpleDownloader
 {
     /**
+     * A cURL session.
+     *
+     * @var false|resource
+     */
+    private $curl;
+
+    /**
+     * Make a new downloader instance.
+     */
+    public function __construct()
+    {
+        $this->init();
+    }
+
+    /**
+     * Initialize a cURL session.
+     */
+    protected function init()
+    {
+        $this->curl = curl_init();
+
+        curl_setopt_array($this->curl, [
+            CURLOPT_FAILONERROR => true,
+        ]);
+    }
+
+    /**
+     * Close a cURL session.
+     */
+    protected function close()
+    {
+        if (! is_null($this->curl)) {
+            curl_close($this->curl);
+            $this->curl = null;
+        }
+    }
+
+    /**
+     * Follow redirects that the server sends as a "Location" header.
+     */
+    public function followRedirects(int $maxRedirects = 20): self
+    {
+        $this->withCurlOption(CURLOPT_FOLLOWLOCATION, $maxRedirects !== 0);
+        $this->withCurlOption(CURLOPT_MAXREDIRS, $maxRedirects);
+
+        return $this;
+    }
+
+    /**
+     * Add a cURL option with the given value.
+     *
+     * @see: https://www.php.net/manual/en/function.curl-setopt.php
+     */
+    public function withCurlOption($option, $value): self
+    {
+        curl_setopt($this->curl, $option, $value);
+
+        return $this;
+    }
+
+    /**
      * Download a file from the URL and save to the given path.
      */
     public function download(string $url, string $destination)
@@ -61,22 +122,19 @@ class SimpleDownloader
      */
     protected function transfer(string $url, $stream)
     {
-        $curl = curl_init();
-
-        curl_setopt_array($curl, [
+        curl_setopt_array($this->curl, [
             CURLOPT_URL => $url,
             CURLOPT_FILE => $stream,
-            CURLOPT_FAILONERROR => true,
         ]);
 
         try {
-            $response = curl_exec($curl);
+            $response = curl_exec($this->curl);
 
             if ($response === false) {
-                throw new TransferException(curl_error($curl));
+                throw new TransferException(curl_error($this->curl));
             }
         } finally {
-            curl_close($curl);
+            $this->close();
         }
     }
 
@@ -96,5 +154,13 @@ class SimpleDownloader
     protected function generateRandomFilename(): string
     {
         return md5(uniqid(mt_rand(), true));
+    }
+
+    /**
+     * Destroy a downloader instance.
+     */
+    public function __destruct()
+    {
+        $this->close();
     }
 }

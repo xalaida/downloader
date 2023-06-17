@@ -2,7 +2,7 @@
 
 namespace Nevadskiy\Downloader\Tests\Feature;
 
-use Nevadskiy\Downloader\Exceptions\DownloadException;
+use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
@@ -19,7 +19,6 @@ class SimpleDownloaderTest extends TestCase
             ->download($this->serverUrl(), $destination = $this->storage.'/home.txt');
 
         static::assertSame($this->storage.'/home.txt', $destination);
-        static::assertFileExists($destination);
         static::assertStringEqualsFile($destination, 'Welcome home!');
     }
 
@@ -30,7 +29,6 @@ class SimpleDownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination = $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -56,8 +54,8 @@ class SimpleDownloaderTest extends TestCase
             (new SimpleDownloader())
                 ->download($this->serverUrl('/fixtures/wrong-file.txt'), $this->storage.'/missing-file.txt');
 
-            static::fail('Expected DownloadException was not thrown.');
-        } catch (DownloadException $e) {
+            static::fail('Expected DownloaderException was not thrown.');
+        } catch (DownloaderException $e) {
             static::assertDirectoryIsEmpty($this->storage);
         }
     }
@@ -68,8 +66,8 @@ class SimpleDownloaderTest extends TestCase
         try {
             (new SimpleDownloader())->download('invalid-url', $this->storage.'/invalid-url.txt');
 
-            static::fail('Expected DownloadException was not thrown.');
-        } catch (DownloadException $e) {
+            static::fail('Expected DownloaderException was not thrown.');
+        } catch (DownloaderException $e) {
             self::assertSame('Could not resolve host: invalid-url', $e->getMessage());
             static::assertDirectoryIsEmpty($this->storage);
         }

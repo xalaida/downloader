@@ -6,7 +6,7 @@ use DateTime;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
-use Nevadskiy\Downloader\Exceptions\DownloadException;
+use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\Tests\TestCase;
 
 class DownloaderTest extends TestCase
@@ -29,7 +29,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl(), $this->storage.'/home.txt');
 
         static::assertSame($this->storage.'/home.txt', $destination);
-        static::assertFileExists($destination);
         static::assertStringEqualsFile($destination, 'Welcome home!');
     }
 
@@ -42,8 +41,8 @@ class DownloaderTest extends TestCase
                 $this->storage.'/missing-file.txt'
             );
 
-            static::fail('Expected DownloadException was not thrown.');
-        } catch (DownloadException $e) {
+            static::fail('Expected DownloaderException was not thrown.');
+        } catch (DownloaderException $e) {
             static::assertDirectoryIsEmpty($this->storage);
         }
     }
@@ -56,8 +55,8 @@ class DownloaderTest extends TestCase
         try {
             (new CurlDownloader())->download('invalid-url', $destination);
 
-            static::fail('Expected DownloadException was not thrown.');
-        } catch (DownloadException $e) {
+            static::fail('Expected DownloaderException was not thrown.');
+        } catch (DownloaderException $e) {
             self::assertSame('Could not resolve host: invalid-url', $e->getMessage());
             static::assertFileNotExists($destination);
         }
@@ -87,7 +86,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files');
 
         static::assertSame($this->storage.'/files/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -99,7 +97,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
         static::assertSame($this->storage.'/files/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -111,7 +108,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/hello-world.txt');
 
         static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -123,7 +119,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/');
 
         static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -135,7 +130,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/.');
 
         static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -146,7 +140,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), './tests/storage');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -158,7 +151,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -209,7 +201,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -239,7 +230,6 @@ class DownloaderTest extends TestCase
             ->replaceIfExists()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -249,7 +239,6 @@ class DownloaderTest extends TestCase
         $destination = (new CurlDownloader())->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -261,7 +250,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/redirect/hello-world.txt'), $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -278,7 +266,6 @@ class DownloaderTest extends TestCase
             ->download($url, $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -293,7 +280,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/private/hello-world.txt'), $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -308,7 +294,6 @@ class DownloaderTest extends TestCase
             ->download($this->serverUrl('/private/hello-world.txt'), $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
@@ -326,7 +311,6 @@ class DownloaderTest extends TestCase
         static::assertSame(13, $loaded);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 }

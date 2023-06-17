@@ -2,6 +2,8 @@
 
 namespace Nevadskiy\Downloader;
 
+use Nevadskiy\Downloader\Exceptions\DownloaderException;
+
 class SimpleDownloader
 {
     public function download(string $url, string $path)
@@ -13,12 +15,21 @@ class SimpleDownloader
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
             CURLOPT_FILE => $file,
+            CURLOPT_FAILONERROR => true,
         ]);
 
-        curl_exec($curl);
+        try {
+            $response = curl_exec($curl);
 
-        curl_close($curl);
+            if ($response === false) {
+                throw new DownloaderException(curl_error($curl));
+            }
+        } finally {
+            curl_close($curl);
 
-        fclose($file);
+            fclose($file);
+
+            unlink($path);
+        }
     }
 }

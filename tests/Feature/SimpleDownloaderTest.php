@@ -7,7 +7,8 @@ use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
-use Nevadskiy\Downloader\Exceptions\NetworkException;
+use Nevadskiy\Downloader\Exceptions\DownloaderException;
+use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 
 class SimpleDownloaderTest extends TestCase
@@ -28,11 +29,37 @@ class SimpleDownloaderTest extends TestCase
     /** @test */
     public function it_downloads_files_by_url()
     {
-        $destination = (new CurlDownloader())
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/hello-world.txt');
+        (new SimpleDownloader())
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination = $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
         static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_downloads_page_by_url()
+    {
+        (new SimpleDownloader())
+            ->download($this->serverUrl(), $destination = $this->storage.'/home.txt');
+
+        static::assertSame($this->storage.'/home.txt', $destination);
+        static::assertFileExists($destination);
+        static::assertStringEqualsFile($destination, 'Welcome home!');
+    }
+
+    /** @test */
+    public function it_11throws_exception_for_url_that_returns_http_error()
+    {
+        try {
+            (new SimpleDownloader())->download(
+                $this->serverUrl('/fixtures/wrong-file.txt'),
+                $this->storage.'/missing-file.txt'
+            );
+
+            static::fail('Expected DownloaderException was not thrown');
+        } catch (DownloaderException $e) {
+            static::assertDirectoryIsEmpty($this->storage);
+        }
     }
 }

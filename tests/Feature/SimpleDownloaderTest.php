@@ -2,14 +2,10 @@
 
 namespace Nevadskiy\Downloader\Tests\Feature;
 
-use DateTime;
-use InvalidArgumentException;
-use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
-use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\TransferException;
 use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
+use RuntimeException;
 
 class SimpleDownloaderTest extends TestCase
 {
@@ -102,5 +98,21 @@ class SimpleDownloaderTest extends TestCase
         static::assertStringEqualsFile($destination, 'Welcome home!');
     }
 
-    // @todo error when directory is missing or not writable.
+    // @todo error when directory is not writable.
+    // @todo test relative path.
+
+    /** @test */
+    public function it_handles_destination_to_missing_existing_directory()
+    {
+        try {
+            (new SimpleDownloader())->download(
+                $this->serverUrl('/fixtures/hello-world.txt'),
+                $this->storage.'/files/hello-world.txt'
+            );
+
+            static::fail('Expected RuntimeException was not thrown');
+        } catch (RuntimeException $e) {
+            self::assertSame(sprintf('Directory [%s] is missing.', $this->storage.'/files'), $e->getMessage());
+        }
+    }
 }

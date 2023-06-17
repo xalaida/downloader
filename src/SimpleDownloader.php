@@ -3,6 +3,7 @@
 namespace Nevadskiy\Downloader;
 
 use Nevadskiy\Downloader\Exceptions\TransferException;
+use RuntimeException;
 use Throwable;
 
 class SimpleDownloader
@@ -18,6 +19,10 @@ class SimpleDownloader
         } else {
             $dir = dirname($destination);
             $path = $destination;
+
+            if (! is_dir($dir)) {
+                throw new RuntimeException(sprintf('Directory [%s] is missing.', $dir));
+            }
         }
 
         $temp = tempnam($dir, 'tmp');

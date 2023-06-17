@@ -7,7 +7,7 @@ use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
-use Nevadskiy\Downloader\Exceptions\TransferException;
+use Nevadskiy\Downloader\Exceptions\DownloadException;
 use Nevadskiy\Downloader\Tests\TestCase;
 
 class DownloaderTest extends TestCase
@@ -43,8 +43,8 @@ class DownloaderTest extends TestCase
                 $this->storage.'/missing-file.txt'
             );
 
-            static::fail('Expected NetworkException was not thrown');
-        } catch (TransferException $e) {
+            static::fail('Expected DownloadException was not thrown.');
+        } catch (DownloadException $e) {
             static::assertDirectoryIsEmpty($this->storage);
         }
     }
@@ -57,8 +57,8 @@ class DownloaderTest extends TestCase
         try {
             (new CurlDownloader())->download('invalid-url', $destination);
 
-            static::fail('Expected NetworkException was not thrown');
-        } catch (TransferException $e) {
+            static::fail('Expected DownloadException was not thrown.');
+        } catch (DownloadException $e) {
             self::assertSame('Could not resolve host: invalid-url', $e->getMessage());
             static::assertFileNotExists($destination);
         }

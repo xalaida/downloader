@@ -4,6 +4,6 @@ namespace Nevadskiy\Downloader\Exceptions;
 
 use RuntimeException;
 
-class TransferException extends RuntimeException
+class DownloadException extends RuntimeException
 {
 }

@@ -2,7 +2,7 @@
 
 namespace Nevadskiy\Downloader;
 
-use Nevadskiy\Downloader\Exceptions\TransferException;
+use Nevadskiy\Downloader\Exceptions\DownloadException;
 use RuntimeException;
 use Throwable;
 
@@ -80,7 +80,7 @@ class SimpleDownloader
     /**
      * Download a file from the URL and save to the given path.
      *
-     * @throws TransferException
+     * @throws DownloadException
      */
     public function download(string $url, string $destination): string
     {
@@ -180,7 +180,7 @@ class SimpleDownloader
             $response = curl_exec($curl);
 
             if ($response === false) {
-                throw new TransferException(curl_error($curl));
+                throw new DownloadException(curl_error($curl));
             }
 
             $url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);

@@ -2,7 +2,7 @@
 
 namespace Nevadskiy\Downloader\Tests\Feature;
 
-use Nevadskiy\Downloader\Exceptions\TransferException;
+use Nevadskiy\Downloader\Exceptions\DownloadException;
 use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
@@ -56,8 +56,8 @@ class SimpleDownloaderTest extends TestCase
             (new SimpleDownloader())
                 ->download($this->serverUrl('/fixtures/wrong-file.txt'), $this->storage.'/missing-file.txt');
 
-            static::fail('Expected DownloaderException was not thrown');
-        } catch (TransferException $e) {
+            static::fail('Expected DownloadException was not thrown.');
+        } catch (DownloadException $e) {
             static::assertDirectoryIsEmpty($this->storage);
         }
     }
@@ -68,8 +68,8 @@ class SimpleDownloaderTest extends TestCase
         try {
             (new SimpleDownloader())->download('invalid-url', $this->storage.'/invalid-url.txt');
 
-            static::fail('Expected NetworkException was not thrown');
-        } catch (TransferException $e) {
+            static::fail('Expected DownloadException was not thrown.');
+        } catch (DownloadException $e) {
             self::assertSame('Could not resolve host: invalid-url', $e->getMessage());
             static::assertDirectoryIsEmpty($this->storage);
         }

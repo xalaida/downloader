@@ -5,7 +5,7 @@ namespace Nevadskiy\Downloader;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
-use Nevadskiy\Downloader\Exceptions\TransferException;
+use Nevadskiy\Downloader\Exceptions\DownloadException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -381,7 +381,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
             });
 
             $tempFile->save($path);
-        } catch (TransferException $e) {
+        } catch (DownloadException $e) {
             $tempFile->delete();
 
             throw $e;
@@ -453,7 +453,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
             $response = curl_exec($ch);
 
             if ($response === false) {
-                throw new TransferException(curl_error($ch));
+                throw new DownloadException(curl_error($ch));
             }
 
             if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 304) {

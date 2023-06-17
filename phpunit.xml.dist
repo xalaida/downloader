@@ -9,7 +9,8 @@
     convertNoticesToExceptions="true"
     convertWarningsToExceptions="true"
     processIsolation="false"
-    stopOnFailure="false"
+    stopOnFailure="true"
+    stopOnError="true"
 >
     <testsuites>
         <testsuite name="Package Test Suite">

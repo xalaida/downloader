@@ -10,6 +10,16 @@ use const DIRECTORY_SEPARATOR;
 class TestCase extends BaseTestCase
 {
     /**
+     * @inheritdoc
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+
+        require_once __DIR__.'/helpers.php';
+    }
+
+    /**
      * Get a base URL of the server with fixture files.
      */
     protected function serverUrl(string $path = '/'): string

@@ -10,11 +10,27 @@ class SimpleDownloader
     /**
      * Download a file from the URL and save to the given path.
      */
-    public function download(string $url, string $path)
+    public function download(string $url, string $destination)
     {
-        $this->newFile($path, function ($file) use ($url) {
+        if (is_dir($destination)) {
+            $dir = $destination;
+            $path = null;
+        } else {
+            $dir = dirname($destination);
+            $path = $destination;
+        }
+
+        $temp = tempnam($dir, 'tmp');
+
+        $this->newFile($temp, function ($file) use ($url) {
             $this->transferToFile($url, $file);
         });
+
+        $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($url);
+
+        rename($temp, $path);
+
+        return $path;
     }
 
     /**
@@ -57,5 +73,23 @@ class SimpleDownloader
         } finally {
             curl_close($curl);
         }
+    }
+
+    /**
+     * Guess filename from the given URL.
+     */
+    protected function guessFilename(string $url): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+
+        return pathinfo($path, PATHINFO_BASENAME) ?: $this->generateRandomFilename();
+    }
+
+    /**
+     * Generate a random filename.
+     */
+    protected function generateRandomFilename(): string
+    {
+        return md5(uniqid(mt_rand(), true));
     }
 }

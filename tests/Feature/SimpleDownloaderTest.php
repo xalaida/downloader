@@ -53,10 +53,8 @@ class SimpleDownloaderTest extends TestCase
     public function it_throws_exception_when_http_error_occurs()
     {
         try {
-            (new SimpleDownloader())->download(
-                $this->serverUrl('/fixtures/wrong-file.txt'),
-                $this->storage.'/missing-file.txt'
-            );
+            (new SimpleDownloader())
+                ->download($this->serverUrl('/fixtures/wrong-file.txt'), $this->storage.'/missing-file.txt');
 
             static::fail('Expected DownloaderException was not thrown');
         } catch (TransferException $e) {
@@ -81,10 +79,8 @@ class SimpleDownloaderTest extends TestCase
     public function it_handles_destination_to_missing_directory()
     {
         try {
-            (new SimpleDownloader())->download(
-                $this->serverUrl('/fixtures/hello-world.txt'),
-                $this->storage.'/files/hello-world.txt'
-            );
+            (new SimpleDownloader())
+                ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
             static::fail('Expected RuntimeException was not thrown');
         } catch (RuntimeException $e) {

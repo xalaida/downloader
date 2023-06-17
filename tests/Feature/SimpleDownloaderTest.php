@@ -7,6 +7,9 @@ use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 use RuntimeException;
 
+/**
+ * @todo split into multiple tests.
+ */
 class SimpleDownloaderTest extends TestCase
 {
     /**
@@ -39,6 +42,21 @@ class SimpleDownloaderTest extends TestCase
         static::assertSame($this->storage.'/hello-world.txt', $destination);
         static::assertFileExists($destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_downloads_multiple_files()
+    {
+        $downloader = new SimpleDownloader();
+
+        $downloader->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/hello-world.txt');
+        $downloader->download($this->serverUrl('/fixtures/hello-php.txt'), $this->storage.'/hello-php.txt');
+
+        static::assertFileExists($this->storage.'/hello-world.txt');
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $this->storage.'/hello-world.txt');
+
+        static::assertFileExists($this->storage.'/hello-php.txt');
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-php.txt', $this->storage.'/hello-php.txt');
     }
 
     /** @test */
@@ -166,5 +184,4 @@ class SimpleDownloaderTest extends TestCase
     }
 
     // @todo when no content - throw exception + delete temp file
-    // @todo test multiple downloads using same downloader (singleton test)...
 }

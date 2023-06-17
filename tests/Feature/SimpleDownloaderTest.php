@@ -114,7 +114,6 @@ class SimpleDownloaderTest extends TestCase
     public function it_downloads_files_with_following_redirects()
     {
         $path = (new SimpleDownloader())
-            ->followRedirects()
             ->download($this->serverUrl('/redirect/hello-world.txt'), $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $path);
@@ -137,7 +136,6 @@ class SimpleDownloaderTest extends TestCase
     public function it_generates_filename_from_url_after_redirects()
     {
         $path = (new SimpleDownloader())
-            ->followRedirects()
             ->download($this->serverUrl('/redirect'), $this->storage);
 
         static::assertSame($path, $this->storage.'/hello-world.txt');

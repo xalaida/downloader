@@ -9,11 +9,11 @@ use Throwable;
 class SimpleDownloader
 {
     /**
-     * A cURL session.
+     * The cURL callbacks.
      *
-     * @var false|resource
+     * @var array
      */
-    protected $curl;
+    protected $curlCallbacks;
 
     /**
      * The MIME types map to file extensions.
@@ -34,50 +34,16 @@ class SimpleDownloader
             'application/pdf' => 'pdf',
             'text/plain' => 'txt',
         ];
-
-        $this->init();
     }
 
     /**
-     * Initialize a cURL session.
-     */
-    protected function init()
-    {
-        $this->curl = curl_init();
-
-        curl_setopt($this->curl, CURLOPT_FAILONERROR, true);
-    }
-
-    /**
-     * Close a cURL session.
-     */
-    protected function close()
-    {
-        if (! is_null($this->curl)) {
-            curl_close($this->curl);
-            $this->curl = null;
-        }
-    }
-
-    /**
-     * Follow redirects that the server sends as a "Location" header.
-     */
-    public function followRedirects(int $maxRedirects = 20): self
-    {
-        $this->withCurlOption(CURLOPT_FOLLOWLOCATION, $maxRedirects !== 0);
-        $this->withCurlOption(CURLOPT_MAXREDIRS, $maxRedirects);
-
-        return $this;
-    }
-
-    /**
-     * Add a cURL option with the given value.
+     * Register the callback for a cURL session.
      *
-     * @see: https://www.php.net/manual/en/function.curl-setopt.php
+     * @see https://www.php.net/manual/en/function.curl-setopt.php
      */
-    public function withCurlOption($option, $value): self
+    public function withCurl(callable $callback): self
     {
-        curl_setopt($this->curl, $option, $value);
+        $this->curlCallbacks[] = $callback;
 
         return $this;
     }
@@ -114,7 +80,7 @@ class SimpleDownloader
         $temp = tempnam($dir, 'tmp');
 
         $response = $this->newFile($temp, function ($file) use ($url) {
-            return $this->transfer($url, $file);
+            return $this->write($url, $file);
         });
 
         $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($response);
@@ -148,14 +114,19 @@ class SimpleDownloader
     }
 
     /**
-     * Fetch URL and write to the file.
+     * Get content by URL and write to the file.
      */
-    protected function transfer(string $url, $file): array
+    protected function write(string $url, $file): array
     {
-        curl_setopt_array($this->curl, [
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
             CURLOPT_URL => $url,
             CURLOPT_FILE => $file,
-            CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$filename, &$type) {
+            CURLOPT_FAILONERROR => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 20,
+            CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$filename, &$contentType) {
                 if (stripos($header, 'Content-Disposition: attachment') !== false) {
                     preg_match('/filename="(.+)"/', $header, $matches);
                     if (isset($matches[1])) {
@@ -164,7 +135,7 @@ class SimpleDownloader
                 }
 
                 if (stripos($header, 'Content-Type: ') !== false) {
-                    $type = trim(str_ireplace('Content-Type: ', '', $header));
+                    $contentType = trim(str_ireplace('Content-Type: ', '', $header));
                 }
 
                 return strlen($header);
@@ -172,19 +143,19 @@ class SimpleDownloader
         ]);
 
         try {
-            $response = curl_exec($this->curl);
+            $response = curl_exec($curl);
 
             if ($response === false) {
-                throw new TransferException(curl_error($this->curl));
+                throw new TransferException(curl_error($curl));
             }
 
             return [
-                'url' => curl_getinfo($this->curl, CURLINFO_EFFECTIVE_URL),
-                'type' => $type,
+                'url' => curl_getinfo($curl, CURLINFO_EFFECTIVE_URL),
+                'content_type' => $contentType,
                 'filename' => $filename,
             ];
         } finally {
-            $this->close();
+            curl_close($curl);
         }
     }
 
@@ -205,7 +176,7 @@ class SimpleDownloader
             return $filename;
         }
 
-        $extension = $this->guessExtension($response['type']);
+        $extension = $this->guessExtension($response['content_type']);
 
         if (! $extension) {
             return $filename;
@@ -219,9 +190,9 @@ class SimpleDownloader
      *
      * @todo use specific lib for that.
      */
-    protected function guessExtension(string $type = null)
+    protected function guessExtension(string $contentType = null)
     {
-        return $this->contentTypes[$type] ?? null;
+        return $this->contentTypes[$contentType] ?? null;
     }
 
     /**
@@ -232,11 +203,7 @@ class SimpleDownloader
         return md5(uniqid(mt_rand(), true));
     }
 
-    /**
-     * Destroy a downloader instance.
-     */
-    public function __destruct()
-    {
-        $this->close();
-    }
+    // @todo specify custom workdir
+    // @todo relative paths
+    // @todo specify custom temp dir (or system temp dir)
 }

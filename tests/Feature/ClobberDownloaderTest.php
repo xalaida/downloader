@@ -48,4 +48,19 @@ class ClobberDownloaderTest extends TestCase
         static::assertSame($this->storage.'/hello-world.txt', $destination);
         static::assertStringEqualsFile($destination, 'Old content!');
     }
+
+    /** @test */
+    public function it_replaces_existing_file_after_downloading()
+    {
+        $destination = $this->storage.'/hello-world.txt';
+
+        file_put_contents($destination, 'Old content!');
+
+        $destination = (new SimpleDownloader())
+            ->replaceIfExists()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+
+        static::assertSame($this->storage.'/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
 }

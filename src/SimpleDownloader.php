@@ -23,14 +23,14 @@ class SimpleDownloader
     const CLOBBERING_SKIP = 1;
 
     /**
-     * Update contents if the existing file is different from the downloaded one.
-     */
-    const CLOBBERING_UPDATE = 2;
-
-    /**
      * Replace contents if file already exists.
      */
-    const CLOBBERING_REPLACE = 3;
+    const CLOBBERING_REPLACE = 2;
+
+    /**
+     * Update contents if the existing file is different from the downloaded one.
+     */
+    const CLOBBERING_UPDATE = 3;
 
     /**
      * Indicates how the downloader should handle a file that already exists.
@@ -105,21 +105,21 @@ class SimpleDownloader
     }
 
     /**
-     * Update contents if the existing file is different from the downloaded one.
-     */
-    public function updateIfExists(): self
-    {
-        $this->clobbering = self::CLOBBERING_UPDATE;
-
-        return $this;
-    }
-
-    /**
      * Replace contents if file already exists.
      */
     public function replaceIfExists(): self
     {
         $this->clobbering = self::CLOBBERING_REPLACE;
+
+        return $this;
+    }
+
+    /**
+     * Update contents if the existing file is different from the downloaded one.
+     */
+    public function updateIfExists(): self
+    {
+        $this->clobbering = self::CLOBBERING_UPDATE;
 
         return $this;
     }
@@ -303,6 +303,8 @@ class SimpleDownloader
             throw FileExistsException::from($path);
         } else if ($this->clobbering === self::CLOBBERING_SKIP) {
             unlink($tempPath);
+        } else if ($this->clobbering === self::CLOBBERING_REPLACE) {
+            rename($tempPath, $path);
         }
     }
 

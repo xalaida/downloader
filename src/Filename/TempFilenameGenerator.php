@@ -9,6 +9,6 @@ class TempFilenameGenerator implements FilenameGenerator
      */
     public function generate(): string
     {
-        return uniqid(mt_rand(), true);
+        return 'tmp'.uniqid(mt_rand(), true);
     }
 }

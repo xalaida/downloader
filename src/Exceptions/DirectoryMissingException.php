@@ -4,9 +4,6 @@ namespace Nevadskiy\Downloader\Exceptions;
 
 use Exception;
 
-/**
- * @todo use separate method from constructor for setting path.
- */
 class DirectoryMissingException extends Exception
 {
     /**
@@ -17,13 +14,14 @@ class DirectoryMissingException extends Exception
     protected $path;
 
     /**
-     * Make a new exception instance.
+     * Make a new exception instance from the given path.
      */
-    public function __construct(string $path)
+    public static function from(string $path): self
     {
-        $this->path = $path;
+        $e = new static(sprintf('Directory [%s] does not exits.', $path));
+        $e->path = $path;
 
-        parent::__construct(sprintf('Directory "%s" does not exist', $path));
+        return $e;
     }
 
     /**

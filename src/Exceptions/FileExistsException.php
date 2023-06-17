@@ -2,12 +2,7 @@
 
 namespace Nevadskiy\Downloader\Exceptions;
 
-use Exception;
-
-/**
- * @todo use separate method from constructor for setting path.
- */
-class FileExistsException extends Exception
+class FileExistsException extends DownloaderException
 {
     /**
      * A path of the file.
@@ -17,13 +12,14 @@ class FileExistsException extends Exception
     protected $path;
 
     /**
-     * Make a new exception instance.
+     * Make a new exception instance from the given path.
      */
-    public function __construct(string $path)
+    public static function from(string $path): self
     {
-        $this->path = $path;
+        $e = new static(sprintf('File [%s] already exists.', $path));
+        $e->path = $path;
 
-        parent::__construct(sprintf('File "%s" already exists', $this->getPath()));
+        return $e;
     }
 
     /**

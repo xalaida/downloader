@@ -13,14 +13,14 @@ class SimpleDownloader
      *
      * @var array
      */
-    protected $curlCallbacks;
+    protected $curlCallbacks = [];
 
     /**
      * The MIME types map to file extensions.
      *
      * @var array
      */
-    protected $contentTypes;
+    protected $contentTypes = [];
 
     /**
      * Make a new downloader instance.
@@ -65,17 +65,7 @@ class SimpleDownloader
      */
     public function download(string $url, string $destination): string
     {
-        if (is_dir($destination)) {
-            $dir = $destination;
-            $path = null;
-        } else {
-            $dir = dirname($destination);
-            $path = $destination;
-
-            if (! is_dir($dir)) {
-                throw new RuntimeException(sprintf('Directory [%s] is missing.', $dir));
-            }
-        }
+        list($dir, $path) = $this->parseDestination($destination);
 
         $temp = tempnam($dir, 'tmp');
 
@@ -91,10 +81,29 @@ class SimpleDownloader
     }
 
     /**
+     * Parse destination to retrieve a directory and destination path.
+     */
+    protected function parseDestination(string $destination): array
+    {
+        if (is_dir($destination)) {
+            $dir = $destination;
+            $path = null;
+        } else {
+            $dir = dirname($destination);
+            $path = $destination;
+
+            if (! is_dir($dir)) {
+                throw new RuntimeException(sprintf('Directory [%s] is missing.', $dir));
+            }
+        }
+
+        return [$dir, $path];
+    }
+
+    /**
      * Write a file using the given callback.
      *
      * @template TValue
-     * @param string $path
      * @param callable(): TValue $writer
      * @return TValue
      */
@@ -115,6 +124,8 @@ class SimpleDownloader
 
     /**
      * Get content by URL and write to the file.
+     *
+     * @param resource $file
      */
     protected function write(string $url, $file): array
     {
@@ -141,6 +152,10 @@ class SimpleDownloader
                 return strlen($header);
             }
         ]);
+
+        foreach ($this->curlCallbacks as $callback) {
+            $callback($curl);
+        }
 
         try {
             $response = curl_exec($curl);

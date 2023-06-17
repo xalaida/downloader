@@ -33,4 +33,19 @@ class ClobberDownloaderTest extends TestCase
             static::assertFileNotExists($this->storage.'/TEMPFILE');
         }
     }
+
+    /** @test */
+    public function it_skips_dowloading_when_file_already_exists()
+    {
+        $destination = $this->storage.'/hello-world.txt';
+
+        file_put_contents($destination, 'Old content!');
+
+        $destination = (new SimpleDownloader())
+            ->skipIfExists()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+
+        static::assertSame($this->storage.'/hello-world.txt', $destination);
+        static::assertStringEqualsFile($destination, 'Old content!');
+    }
 }

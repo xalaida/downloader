@@ -13,25 +13,38 @@ use Throwable;
 class SimpleDownloader
 {
     /**
+     * Throw an exception if the file already exists.
+     */
+    const CLOBBERING_FAIL = 0;
+
+    /**
+     * Skip downloading if the file already exists.
+     */
+    const CLOBBERING_SKIP = 1;
+
+    /**
+     * Update contents if the existing file is different from the downloaded one.
+     */
+    const CLOBBERING_UPDATE = 2;
+
+    /**
+     * Replace contents if file already exists.
+     */
+    const CLOBBERING_REPLACE = 3;
+
+    /**
+     * Indicates how the downloader should handle a file that already exists.
+     *
+     * @var int
+     */
+    protected $clobbering = self::CLOBBERING_FAIL;
+
+    /**
      * The cURL callbacks.
      *
      * @var array
      */
     protected $curlCallbacks = [];
-
-    /**
-     * The random filename generator.
-     *
-     * @var FilenameGenerator
-     */
-    protected $randomFilenameGenerator;
-
-    /**
-     * The temp filename generator.
-     *
-     * @var FilenameGenerator
-     */
-    protected $tempFilenameGenerator;
 
     /**
      * The MIME types map to file extensions.
@@ -41,13 +54,24 @@ class SimpleDownloader
     protected $contentTypes = [];
 
     /**
+     * The temp filename generator.
+     *
+     * @var FilenameGenerator
+     */
+    protected $tempFilenameGenerator;
+
+    /**
+     * The random filename generator.
+     *
+     * @var FilenameGenerator
+     */
+    protected $randomFilenameGenerator;
+
+    /**
      * Make a new downloader instance.
      */
     public function __construct()
     {
-        $this->randomFilenameGenerator = new Md5FilenameGenerator();
-        $this->tempFilenameGenerator = new TempFilenameGenerator();
-
         $this->contentTypes = [
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
@@ -55,6 +79,49 @@ class SimpleDownloader
             'application/pdf' => 'pdf',
             'text/plain' => 'txt',
         ];
+
+        $this->tempFilenameGenerator = new TempFilenameGenerator();
+        $this->randomFilenameGenerator = new Md5FilenameGenerator();
+    }
+
+    /**
+     * Throw an exception if a file already exists.
+     */
+    public function failIfExists(): self
+    {
+        $this->clobbering = self::CLOBBERING_FAIL;
+
+        return $this;
+    }
+
+    /**
+     * Skip downloading if a file already exists.
+     */
+    public function skipIfExists(): self
+    {
+        $this->clobbering = self::CLOBBERING_SKIP;
+
+        return $this;
+    }
+
+    /**
+     * Update contents if the existing file is different from the downloaded one.
+     */
+    public function updateIfExists(): self
+    {
+        $this->clobbering = self::CLOBBERING_UPDATE;
+
+        return $this;
+    }
+
+    /**
+     * Replace contents if file already exists.
+     */
+    public function replaceIfExists(): self
+    {
+        $this->clobbering = self::CLOBBERING_REPLACE;
+
+        return $this;
     }
 
     /**
@@ -70,36 +137,6 @@ class SimpleDownloader
     }
 
     /**
-     * Set the random filename generator.
-     */
-    public function setRandomFilenameGenerator(FilenameGenerator $generator): self
-    {
-        $this->randomFilenameGenerator = $generator;
-
-        return $this;
-    }
-
-    /**
-     * Set the temp filename generator.
-     */
-    public function setTempFilenameGenerator(FilenameGenerator $generator): self
-    {
-        $this->tempFilenameGenerator = $generator;
-
-        return $this;
-    }
-
-    /**
-     * Add content types for extension detector.
-     */
-    public function withContentTypes(array $contentTypes): self
-    {
-        $this->contentTypes = array_merge($this->contentTypes, $contentTypes);
-
-        return $this;
-    }
-
-    /**
      * Download a file from the URL and save to the given path.
      *
      * @throws DownloaderException
@@ -110,19 +147,13 @@ class SimpleDownloader
 
         $tempPath = $dir . DIRECTORY_SEPARATOR . $this->tempFilenameGenerator->generate();
 
-        $path = $this->newFile($tempPath, function ($file) use ($url, $dir, $path) {
-            $response = $this->write($url, $file);
-
-            $path = $path ?: ($dir . DIRECTORY_SEPARATOR . $this->guessFilename($response));
-
-            if (file_exists($path)) {
-                throw FileExistsException::from($path);
-            }
-
-            return $path;
+        $response = $this->newFile($tempPath, function ($file) use ($url) {
+            return $this->write($url, $file);
         });
 
-        rename($tempPath, $path);
+        $path = $path ?: ($dir . DIRECTORY_SEPARATOR . $this->guessFilename($response));
+
+        $this->saveAs($tempPath, $path);
 
         return $path;
     }
@@ -257,5 +288,51 @@ class SimpleDownloader
     protected function guessExtension(array $response)
     {
         return $this->contentTypes[$response['content_type']] ?? null;
+    }
+
+    /**
+     * Save a temp file to the given path.
+     */
+    protected function saveAs(string $tempPath, string $path)
+    {
+        if (! file_exists($path)) {
+            rename($tempPath, $path);
+        } else if ($this->clobbering === self::CLOBBERING_FAIL) {
+            unlink($tempPath);
+
+            throw FileExistsException::from($path);
+        } else if ($this->clobbering === self::CLOBBERING_SKIP) {
+            unlink($tempPath);
+        }
+    }
+
+    /**
+     * Add content types for extension detector.
+     */
+    public function withContentTypes(array $contentTypes): self
+    {
+        $this->contentTypes = array_merge($this->contentTypes, $contentTypes);
+
+        return $this;
+    }
+
+    /**
+     * Set the temp filename generator.
+     */
+    public function setTempFilenameGenerator(FilenameGenerator $generator): self
+    {
+        $this->tempFilenameGenerator = $generator;
+
+        return $this;
+    }
+
+    /**
+     * Set the random filename generator.
+     */
+    public function setRandomFilenameGenerator(FilenameGenerator $generator): self
+    {
+        $this->randomFilenameGenerator = $generator;
+
+        return $this;
     }
 }

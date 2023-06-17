@@ -258,8 +258,4 @@ class SimpleDownloader
     {
         return $this->contentTypes[$response['content_type']] ?? null;
     }
-
-    // @todo specify custom workdir
-    // @todo relative paths
-    // @todo specify custom temp dir (or system temp dir)
 }

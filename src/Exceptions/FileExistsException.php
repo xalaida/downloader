@@ -4,6 +4,9 @@ namespace Nevadskiy\Downloader\Exceptions;
 
 use Exception;
 
+/**
+ * @todo use separate method from constructor for setting path.
+ */
 class FileExistsException extends Exception
 {
     /**

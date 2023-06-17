@@ -3,7 +3,6 @@
 namespace Nevadskiy\Downloader\Tests\Feature;
 
 use DateTime;
-use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;

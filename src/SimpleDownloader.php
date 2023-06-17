@@ -13,21 +13,21 @@ class SimpleDownloader
      *
      * @var false|resource
      */
-    private $curl;
+    protected $curl;
 
     /**
      * The MIME types map to file extensions.
      *
      * @var array
      */
-    private $mimeTypes;
+    protected $contentTypes;
 
     /**
      * Make a new downloader instance.
      */
     public function __construct()
     {
-        $this->mimeTypes = [
+        $this->contentTypes = [
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
             'image/gif' => 'gif',
@@ -83,11 +83,11 @@ class SimpleDownloader
     }
 
     /**
-     * Add custom MIME types for extension detector.
+     * Add custom content types for extension detector.
      */
-    public function mimeTypes(array $mimeTypes): self
+    public function contentTypes(array $contentTypes): self
     {
-        $this->mimeTypes = array_merge($this->mimeTypes, $mimeTypes);
+        $this->contentTypes = array_merge($this->contentTypes, $contentTypes);
 
         return $this;
     }
@@ -155,7 +155,7 @@ class SimpleDownloader
         curl_setopt_array($this->curl, [
             CURLOPT_URL => $url,
             CURLOPT_FILE => $file,
-            CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$filename, &$mime) {
+            CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$filename, &$type) {
                 if (stripos($header, 'Content-Disposition: attachment') !== false) {
                     preg_match('/filename="(.+)"/', $header, $matches);
                     if (isset($matches[1])) {
@@ -164,7 +164,7 @@ class SimpleDownloader
                 }
 
                 if (stripos($header, 'Content-Type: ') !== false) {
-                    $mime = trim(str_ireplace('Content-Type: ', '', $header));
+                    $type = trim(str_ireplace('Content-Type: ', '', $header));
                 }
 
                 return strlen($header);
@@ -180,7 +180,7 @@ class SimpleDownloader
 
             return [
                 'url' => curl_getinfo($this->curl, CURLINFO_EFFECTIVE_URL),
-                'mime' => $mime,
+                'type' => $type,
                 'filename' => $filename,
             ];
         } finally {
@@ -205,7 +205,7 @@ class SimpleDownloader
             return $filename;
         }
 
-        $extension = $this->guessExtension($response['mime']);
+        $extension = $this->guessExtension($response['type']);
 
         if (! $extension) {
             return $filename;
@@ -215,13 +215,13 @@ class SimpleDownloader
     }
 
     /**
-     * Guess a file extension by the MIME type.
+     * Guess a file extension by the content type.
      *
      * @todo use specific lib for that.
      */
-    protected function guessExtension(string $mime = null)
+    protected function guessExtension(string $type = null)
     {
-        return $this->mimeTypes[$mime] ?? null;
+        return $this->contentTypes[$type] ?? null;
     }
 
     /**

@@ -101,4 +101,6 @@ class SimpleDownloaderTest extends TestCase
         static::assertFileExists($destination);
         static::assertStringEqualsFile($destination, 'Welcome home!');
     }
+
+    // @todo error when directory is missing or not writable.
 }

@@ -48,6 +48,17 @@ class SimpleDownloaderTest extends TestCase
     }
 
     /** @test */
+    public function it_downloads_files_with_following_redirects()
+    {
+        $path = (new SimpleDownloader())
+            ->download($this->serverUrl('/redirect/hello-world.txt'), $this->storage.'/hello-world-redirect.txt');
+
+        static::assertSame($this->storage.'/hello-world-redirect.txt', $path);
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
     public function it_throws_exception_when_http_error_occurs()
     {
         try {
@@ -74,7 +85,7 @@ class SimpleDownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_handles_destination_to_missing_directory()
+    public function it_throws_exception_when_destination_directory_is_missing()
     {
         try {
             (new SimpleDownloader())
@@ -97,17 +108,6 @@ class SimpleDownloaderTest extends TestCase
     // it_downloads_file_according_to_current_working_directory
 
     // change_working_directory_for_downloader
-
-    /** @test */
-    public function it_downloads_files_with_following_redirects()
-    {
-        $path = (new SimpleDownloader())
-            ->download($this->serverUrl('/redirect/hello-world.txt'), $this->storage.'/hello-world-redirect.txt');
-
-        static::assertSame($this->storage.'/hello-world-redirect.txt', $path);
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
-    }
 
     // @todo when no content - throw exception + delete temp file
 }

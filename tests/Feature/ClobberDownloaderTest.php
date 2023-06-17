@@ -33,6 +33,4 @@ class ClobberDownloaderTest extends TestCase
             static::assertFileNotExists($this->storage.'/TEMPFILE');
         }
     }
-
-    // @todo add check that tmp file missing everywhere with exception...
 }

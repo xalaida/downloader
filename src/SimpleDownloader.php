@@ -24,7 +24,7 @@ class SimpleDownloader
 
     // @todo clone if exists (hello-world.txt => hello-world.txt.1).
 
-    // @todo update if exists.
+    // @todo update if exists (last-modified header and if-modified-since header).
 
     /**
      * Replace contents if file already exists.

@@ -16,6 +16,13 @@ class SimpleDownloader
     protected $curlCallbacks = [];
 
     /**
+     * The random filename generator.
+     *
+     * @var Md5FilenameGenerator
+     */
+    protected $filenameGenerator;
+
+    /**
      * The MIME types map to file extensions.
      *
      * @var array
@@ -27,6 +34,8 @@ class SimpleDownloader
      */
     public function __construct()
     {
+        $this->filenameGenerator = new Md5FilenameGenerator();
+
         $this->contentTypes = [
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
@@ -49,9 +58,19 @@ class SimpleDownloader
     }
 
     /**
-     * Add custom content types for extension detector.
+     * Set the random filename generator.
      */
-    public function contentTypes(array $contentTypes): self
+    public function setFilenameGenerator(RandomFilenameGenerator $generator): self
+    {
+        $this->filenameGenerator = $generator;
+
+        return $this;
+    }
+
+    /**
+     * Add content types for extension detector.
+     */
+    public function withContentTypes(array $contentTypes): self
     {
         $this->contentTypes = array_merge($this->contentTypes, $contentTypes);
 
@@ -164,8 +183,10 @@ class SimpleDownloader
                 throw new TransferException(curl_error($curl));
             }
 
+            $url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
+
             return [
-                'url' => curl_getinfo($curl, CURLINFO_EFFECTIVE_URL),
+                'url' => $url,
                 'content_type' => $contentType,
                 'filename' => $filename,
             ];
@@ -175,7 +196,7 @@ class SimpleDownloader
     }
 
     /**
-     * Guess filename from the given URL.
+     * Guess a filename from the given URL.
      */
     protected function guessFilename(array $response): string
     {
@@ -185,13 +206,13 @@ class SimpleDownloader
 
         $path = parse_url($response['url'], PHP_URL_PATH);
 
-        $filename = pathinfo($path, PATHINFO_BASENAME) ?: $this->generateRandomFilename();
+        $filename = pathinfo($path, PATHINFO_BASENAME) ?: $this->filenameGenerator->generate();
 
         if (pathinfo($path, PATHINFO_EXTENSION)) {
             return $filename;
         }
 
-        $extension = $this->guessExtension($response['content_type']);
+        $extension = $this->guessExtension($response);
 
         if (! $extension) {
             return $filename;
@@ -205,17 +226,9 @@ class SimpleDownloader
      *
      * @todo use specific lib for that.
      */
-    protected function guessExtension(string $contentType = null)
+    protected function guessExtension(array $response)
     {
-        return $this->contentTypes[$contentType] ?? null;
-    }
-
-    /**
-     * Generate a random filename.
-     */
-    protected function generateRandomFilename(): string
-    {
-        return md5(uniqid(mt_rand(), true));
+        return $this->contentTypes[$response['content_type']] ?? null;
     }
 
     // @todo specify custom workdir

@@ -2,7 +2,11 @@
 
 namespace Nevadskiy\Downloader;
 
-use Nevadskiy\Downloader\Exceptions\DownloadException;
+use Nevadskiy\Downloader\Exceptions\DownloaderException;
+use Nevadskiy\Downloader\Exceptions\FileExistsException;
+use Nevadskiy\Downloader\Filename\FilenameGenerator;
+use Nevadskiy\Downloader\Filename\Md5FilenameGenerator;
+use Nevadskiy\Downloader\Filename\TempFilenameGenerator;
 use RuntimeException;
 use Throwable;
 
@@ -18,9 +22,16 @@ class SimpleDownloader
     /**
      * The random filename generator.
      *
-     * @var Md5FilenameGenerator
+     * @var FilenameGenerator
      */
-    protected $filenameGenerator;
+    protected $randomFilenameGenerator;
+
+    /**
+     * The temp filename generator.
+     *
+     * @var FilenameGenerator
+     */
+    protected $tempFilenameGenerator;
 
     /**
      * The MIME types map to file extensions.
@@ -34,7 +45,8 @@ class SimpleDownloader
      */
     public function __construct()
     {
-        $this->filenameGenerator = new Md5FilenameGenerator();
+        $this->randomFilenameGenerator = new Md5FilenameGenerator();
+        $this->tempFilenameGenerator = new TempFilenameGenerator();
 
         $this->contentTypes = [
             'image/jpeg' => 'jpg',
@@ -60,9 +72,19 @@ class SimpleDownloader
     /**
      * Set the random filename generator.
      */
-    public function setFilenameGenerator(RandomFilenameGenerator $generator): self
+    public function setRandomFilenameGenerator(FilenameGenerator $generator): self
     {
-        $this->filenameGenerator = $generator;
+        $this->randomFilenameGenerator = $generator;
+
+        return $this;
+    }
+
+    /**
+     * Set the temp filename generator.
+     */
+    public function setTempFilenameGenerator(FilenameGenerator $generator): self
+    {
+        $this->tempFilenameGenerator = $generator;
 
         return $this;
     }
@@ -80,21 +102,27 @@ class SimpleDownloader
     /**
      * Download a file from the URL and save to the given path.
      *
-     * @throws DownloadException
+     * @throws DownloaderException
      */
     public function download(string $url, string $destination): string
     {
         list($dir, $path) = $this->parseDestination($destination);
 
-        $temp = tempnam($dir, 'tmp');
+        $tempPath = $dir . DIRECTORY_SEPARATOR . $this->tempFilenameGenerator->generate();
 
-        $response = $this->newFile($temp, function ($file) use ($url) {
-            return $this->write($url, $file);
+        $path = $this->newFile($tempPath, function ($file) use ($url, $dir, $path) {
+            $response = $this->write($url, $file);
+
+            $path = $path ?: ($dir . DIRECTORY_SEPARATOR . $this->guessFilename($response));
+
+            if (file_exists($path)) {
+                throw FileExistsException::from($path);
+            }
+
+            return $path;
         });
 
-        $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($response);
-
-        rename($temp, $path);
+        rename($tempPath, $path);
 
         return $path;
     }
@@ -180,7 +208,7 @@ class SimpleDownloader
             $response = curl_exec($curl);
 
             if ($response === false) {
-                throw new DownloadException(curl_error($curl));
+                throw new DownloaderException(curl_error($curl));
             }
 
             $url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
@@ -206,7 +234,7 @@ class SimpleDownloader
 
         $path = parse_url($response['url'], PHP_URL_PATH);
 
-        $filename = pathinfo($path, PATHINFO_BASENAME) ?: $this->filenameGenerator->generate();
+        $filename = pathinfo($path, PATHINFO_BASENAME) ?: $this->randomFilenameGenerator->generate();
 
         if (pathinfo($path, PATHINFO_EXTENSION)) {
             return $filename;

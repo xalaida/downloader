@@ -70,8 +70,9 @@ class DownloaderTest extends TestCase
         try {
             (new CurlDownloader())->download('invalid-url', $destination);
 
-            static::fail('Expected InvalidArgumentException was not thrown');
-        } catch (InvalidArgumentException $e) {
+            static::fail('Expected NetworkException was not thrown');
+        } catch (NetworkException $e) {
+            self::assertSame('Could not resolve host: invalid-url', $e->getMessage());
             static::assertFileNotExists($destination);
         }
     }
@@ -141,19 +142,6 @@ class DownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_can_specify_base_directory()
-    {
-        $destination = (new CurlDownloader())
-            ->allowRecursiveDirectoryCreation()
-            ->baseDirectory($this->storage)
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), 'files/hello-world.txt');
-
-        static::assertSame($this->storage.'/files/hello-world.txt', $destination);
-        static::assertFileExists($destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
-    }
-
-    /** @test */
     public function it_can_specify_destination_directory_with_dot_syntax()
     {
         $destination = (new CurlDownloader())
@@ -181,8 +169,7 @@ class DownloaderTest extends TestCase
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
-            ->baseDirectory($this->storage)
-            ->download($this->serverUrl('/fixtures/hello-world.txt'));
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
         static::assertFileExists($destination);

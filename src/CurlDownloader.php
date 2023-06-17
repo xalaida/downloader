@@ -10,6 +10,7 @@ use Nevadskiy\Downloader\Exceptions\NetworkException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
+use RuntimeException;
 use function dirname;
 use const DIRECTORY_SEPARATOR;
 
@@ -41,13 +42,6 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
      * Default permissions for created destination directory.
      */
     const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
-
-    /**
-     * Indicates the base directory to use to create the destination path.
-     *
-     * @var string
-     */
-    protected $baseDirectory;
 
     /**
      * The cURL request headers.
@@ -166,16 +160,6 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
     }
 
     /**
-     * Specify the base directory to use to create the destination path.
-     */
-    public function baseDirectory(string $directory): self
-    {
-        $this->baseDirectory = rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-
-        return $this;
-    }
-
-    /**
      * Add a cURL option with the given value.
      *
      * @see: https://www.php.net/manual/en/function.curl-setopt.php
@@ -234,56 +218,144 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
+//    /**
+//     * @inheritdoc
+//     */
+//    public function download(string $url, string $destination = null): string
+//    {
+//        $path = $this->getDestinationPath($url, $destination ?: '.' . DIRECTORY_SEPARATOR);
+//
+//        $this->performDownload($path, $url);
+//
+//        return $this->normalizePath($path);
+//    }
+
     public function download(string $url, string $destination = null): string
     {
-        $path = $this->getDestinationPath($url, $destination ?: '.' . DIRECTORY_SEPARATOR);
+        $destination = $destination ? rtrim($destination, '.') : null;
 
-        $this->performDownload($path, $url);
-
-        return $this->normalizePath($path);
-    }
-
-    /**
-     * Get a destination path of the downloaded file.
-     */
-    protected function getDestinationPath(string $url, string $destination): string
-    {
-        $destination = $this->getDestinationInBaseDirectory(
-            $this->sanitizeDestination($destination)
-        );
-
-        if (! $this->isDirectory($destination)) {
-            return $destination;
+        if ($this->isDirectory($destination)) {
+            $directory = $destination;
+            $filename = null;
+        } else {
+            $directory = dirname($destination);
+            $filename = basename($destination);
         }
 
-        return rtrim($destination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $this->getFileNameByUrl($url);
-    }
+        $directory = $this->createDirectoryIfMissing($directory);
 
-    /**
-     * Sanitize the destination path.
-     */
-    protected function sanitizeDestination(string $destination): string
-    {
-        if (mb_substr($destination, -2) === DIRECTORY_SEPARATOR . '.') {
-            return mb_substr($destination, 0, -1);
+        $temp = tempnam($directory ?: sys_get_temp_dir(), 'downloads');
+        $stream = fopen($temp, 'wb');
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_FAILONERROR => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_FILE => $stream,
+            CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$responseFilename, &$mimeType) {
+                if (stripos($header, 'Content-Disposition: attachment') !== false) {
+                    preg_match('/filename="(.+)"/', $header, $matches);
+                    if (isset($matches[1])) {
+                        $responseFilename = $matches[1];
+                    }
+                }
+
+                if (stripos($header, 'Content-Type: ') !== false) {
+                    $mimeType = trim(str_ireplace('Content-Type: ', '', $header));
+                }
+
+                // @todo check here if file already exists, etc.
+                // @todo check how many times this function have been actually called.
+
+                return strlen($header);
+            }
+        ]);
+
+        $response = curl_exec($curl);
+
+        $error = curl_error($curl);
+
+        $url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
+
+        curl_close($curl);
+
+        fclose($stream);
+
+        // die(var_dump($response, $error));
+
+        if ($response === false) {
+            unlink($temp);
+
+            throw new NetworkException($error);
         }
 
-        return $destination;
-    }
+        $filename = $filename ?: $responseFilename ?: $this->getFilename($url, $mimeType);
 
-    /**
-     * Get a destination path according to the base directory.
-     */
-    protected function getDestinationInBaseDirectory(string $destination): string
-    {
-        if (! $this->baseDirectory) {
-            return $destination;
+        // @todo process relative paths.
+
+        $path = rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
+
+        // die(var_dump($path));
+
+//        if (file_exists($path)) {
+//            if (self::CLOBBER_MODE_FAIL === $this->clobberMode) {
+//                throw new FileExistsException($path);
+//            } else if (self::CLOBBER_MODE_SKIP === $this->clobberMode) {
+//                unlink($temp);
+//
+//                return $path;
+//            }
+//        }
+
+        if (! rename($temp, $path)) {
+            throw new RuntimeException('Unable to rename the file.');
         }
 
-        return $this->baseDirectory . ltrim($destination, DIRECTORY_SEPARATOR);
+        return realpath($path);
+    }
+
+    private function getFilename(string $url, string $mimeType = null): string
+    {
+        $path = parse_url($url, PHP_URL_PATH);
+
+        $filename = pathinfo($path, PATHINFO_BASENAME) ?: $this->generateRandomFilename();
+
+        if (pathinfo($path, PATHINFO_EXTENSION)) {
+            return $filename;
+        }
+
+        $extension = $this->guessExtensionByMimeType($mimeType);
+
+        if (! $extension) {
+            return $filename;
+        }
+
+        return $filename . '.' . $extension;
+    }
+
+    // Generate a random filename. Use the server address so that a file
+    // generated at the same time on a different server won't have a collision.
+    // $name = md5(uniqid(empty($_SERVER['SERVER_ADDR']) ? '' : $_SERVER['SERVER_ADDR'], true));
+    private function generateRandomFilename(): string
+    {
+        return md5(uniqid(mt_rand(), true));
+    }
+
+    private function guessExtensionByMimeType(string $mimeType)
+    {
+        $extensions = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'application/pdf' => 'pdf',
+            'text/plain' => 'txt',
+            // Add more MIME types and extensions as needed
+        ];
+
+        return $extensions[$mimeType] ?? null;
     }
 
     /**
@@ -293,14 +365,6 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
     {
         return is_dir($destination)
             || mb_substr($destination, -1) === DIRECTORY_SEPARATOR;
-    }
-
-    /**
-     * Get a file name by the given URL.
-     */
-    protected function getFileNameByUrl(string $url): string
-    {
-        return basename($url);
     }
 
     /**
@@ -374,7 +438,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
      */
     protected function writeStream(string $path, string $url, array $headers)
     {
-        $tempFile = new TempFile($this->getDestinationDirectory($path));
+        $tempFile = new TempFile($this->createDirectoryIfMissing($path));
 
         try {
             $tempFile->writeUsing(function ($stream) use ($url, $headers) {
@@ -392,10 +456,8 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
     /**
      * Get the destination directory by the given file path.
      */
-    protected function getDestinationDirectory(string $file): string
+    protected function createDirectoryIfMissing(string $directory): string
     {
-        $directory = dirname($file);
-
         try {
             $this->ensureDirectoryExists($directory);
         } catch (DirectoryMissingException $e) {
@@ -403,7 +465,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
                 throw $e;
             }
 
-            $this->logger->notice('Creating missing directory "{directory}"', ['directory' => $directory]);
+            $this->logger->notice('Creating missing directory "{directory}".', ['directory' => $directory]);
 
             $this->createDirectory($directory);
         }

@@ -3,6 +3,8 @@ var http = require('http');
 var path = require('path');
 
 http.createServer(function (req, res) {
+    console.log(`Ping at "${req.url}" with headers [${JSON.stringify(req.headers)}]`)
+
     if (req.url === '/') {
         res.write('Welcome home!');
         res.end();

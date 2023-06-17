@@ -12,7 +12,9 @@ RUN apt-get update \
     && docker-php-ext-install zip \
 # Install Xdebug
     && pecl install xdebug-2.5.0 \
-    && docker-php-ext-enable xdebug
+    && docker-php-ext-enable xdebug \
+# Clean up the apt cache
+    && rm -rf /var/lib/apt/lists/*
 
 # Install composer
 ENV COMPOSER_ALLOW_SUPERUSER 1

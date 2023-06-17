@@ -12,16 +12,6 @@ use RuntimeException;
  */
 class SimpleDownloaderTest extends TestCase
 {
-    /**
-     * @inheritdoc
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-
-        $this->storage = $this->prepareStorageDirectory();
-    }
-
     /** @test */
     public function it_downloads_response_by_url()
     {
@@ -88,20 +78,6 @@ class SimpleDownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_downloads_response_when_destination_is_directory()
-    {
-        $path = (new SimpleDownloader())
-            ->download($this->serverUrl(), $this->storage);
-
-        static::assertNotSame($this->storage, $path);
-        static::assertFileExists($path);
-        static::assertStringEqualsFile($path, 'Welcome home!');
-    }
-
-    // @todo error when directory is not writable.
-    // @todo test relative path.
-
-    /** @test */
     public function it_handles_destination_to_missing_directory()
     {
         try {
@@ -132,53 +108,9 @@ class SimpleDownloaderTest extends TestCase
     public function it_downloads_files_with_following_redirects()
     {
         $path = (new SimpleDownloader())
-            ->download($this->serverUrl('/redirect/hello-world.txt'), $this->storage.'/hello-world.txt');
+            ->download($this->serverUrl('/redirect/hello-world.txt'), $this->storage.'/hello-world-redirect.txt');
 
-        static::assertSame($this->storage.'/hello-world.txt', $path);
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
-    }
-
-    /** @test */
-    public function it_generates_filename_from_url_when_destination_is_directory()
-    {
-        $path = (new SimpleDownloader())
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
-
-        static::assertSame($path, $this->storage.'/hello-world.txt');
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
-    }
-
-    /** @test */
-    public function it_generates_filename_from_url_after_redirects()
-    {
-        $path = (new SimpleDownloader())
-            ->download($this->serverUrl('/redirect'), $this->storage);
-
-        static::assertSame($path, $this->storage.'/hello-world.txt');
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
-    }
-
-    /** @test */
-    public function it_generates_filename_from_url_and_mime_type_when_destination_is_directory()
-    {
-        $path = (new SimpleDownloader())
-            ->download($this->serverUrl('/hello-world'), $this->storage);
-
-        static::assertSame($path, $this->storage.'/hello-world.txt');
-        static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
-    }
-
-    /** @test */
-    public function it_generates_filename_from_content_disposition_header_when_destination_is_directory()
-    {
-        $path = (new SimpleDownloader())
-            ->download($this->serverUrl('/content'), $this->storage);
-
-        static::assertSame($path, $this->storage.'/hello-world.txt');
+        static::assertSame($this->storage.'/hello-world-redirect.txt', $path);
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }

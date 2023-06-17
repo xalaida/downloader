@@ -12,19 +12,6 @@ use Nevadskiy\Downloader\Tests\TestCase;
 
 class DownloaderTest extends TestCase
 {
-    // @todo detect filename from mime type
-    // @todo detect filename from redirected URL
-
-    /**
-     * @inheritdoc
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-
-        $this->storage = $this->prepareStorageDirectory();
-    }
-
     /** @test */
     public function it_downloads_files_by_url()
     {

@@ -10,11 +10,20 @@ use const DIRECTORY_SEPARATOR;
 class TestCase extends BaseTestCase
 {
     /**
+     * The storage dir.
+     *
+     * @var string
+     */
+    protected $storage;
+
+    /**
      * @inheritdoc
      */
     protected function setUp()
     {
         parent::setUp();
+
+        $this->storage = $this->prepareStorageDirectory();
 
         require_once __DIR__.'/helpers.php';
     }

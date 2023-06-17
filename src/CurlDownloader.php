@@ -239,23 +239,11 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
      */
     public function download(string $url, string $destination = null): string
     {
-        $this->ensureUrlIsValid($url);
-
         $path = $this->getDestinationPath($url, $destination ?: '.' . DIRECTORY_SEPARATOR);
 
         $this->performDownload($path, $url);
 
         return $this->normalizePath($path);
-    }
-
-    /**
-     * Ensure that the given URL is valid.
-     */
-    protected function ensureUrlIsValid(string $url)
-    {
-        if (! filter_var($url, FILTER_VALIDATE_URL)) {
-            throw new InvalidArgumentException(sprintf('The URL "%s" is invalid', $url));
-        }
     }
 
     /**

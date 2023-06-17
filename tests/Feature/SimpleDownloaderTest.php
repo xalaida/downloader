@@ -9,9 +9,6 @@ use RuntimeException;
 
 class SimpleDownloaderTest extends TestCase
 {
-    // @todo detect filename from mime type
-    // @todo detect filename from redirected URL
-
     /**
      * @inheritdoc
      */
@@ -75,12 +72,10 @@ class SimpleDownloaderTest extends TestCase
     /** @test */
     public function it_downloads_response_when_destination_is_directory()
     {
-        mkdir($this->storage.'/files', 0755);
-
         $path = (new SimpleDownloader())
-            ->download($this->serverUrl(), $this->storage.'/files');
+            ->download($this->serverUrl(), $this->storage);
 
-        static::assertNotSame($this->storage.'/files', $path);
+        static::assertNotSame($this->storage, $path);
         static::assertFileExists($path);
         static::assertStringEqualsFile($path, 'Welcome home!');
     }
@@ -89,7 +84,7 @@ class SimpleDownloaderTest extends TestCase
     // @todo test relative path.
 
     /** @test */
-    public function it_handles_destination_to_missing_existing_directory()
+    public function it_handles_destination_to_missing_directory()
     {
         try {
             (new SimpleDownloader())->download(
@@ -130,12 +125,10 @@ class SimpleDownloaderTest extends TestCase
     /** @test */
     public function it_generates_filename_from_url_when_destination_is_directory()
     {
-        mkdir($this->storage.'/files', 0755);
-
         $path = (new SimpleDownloader())
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files');
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
 
-        static::assertSame($path, $this->storage.'/files/hello-world.txt');
+        static::assertSame($path, $this->storage.'/hello-world.txt');
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
@@ -143,13 +136,11 @@ class SimpleDownloaderTest extends TestCase
     /** @test */
     public function it_generates_filename_from_url_after_redirects()
     {
-        mkdir($this->storage.'/files', 0755);
-
         $path = (new SimpleDownloader())
             ->followRedirects()
-            ->download($this->serverUrl('/redirect'), $this->storage.'/files');
+            ->download($this->serverUrl('/redirect'), $this->storage);
 
-        static::assertSame($path, $this->storage.'/files/hello-world.txt');
+        static::assertSame($path, $this->storage.'/hello-world.txt');
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
@@ -157,13 +148,21 @@ class SimpleDownloaderTest extends TestCase
     /** @test */
     public function it_generates_filename_from_url_and_mime_type_when_destination_is_directory()
     {
-        mkdir($this->storage.'/files', 0755);
-
         $path = (new SimpleDownloader())
-            ->followRedirects()
-            ->download($this->serverUrl('/mime'), $this->storage.'/files');
+            ->download($this->serverUrl('/hello-world'), $this->storage);
 
-        static::assertSame($path, $this->storage.'/files/hello-world.txt');
+        static::assertSame($path, $this->storage.'/hello-world.txt');
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_generates_filename_from_content_disposition_header_when_destination_is_directory()
+    {
+        $path = (new SimpleDownloader())
+            ->download($this->serverUrl('/content'), $this->storage);
+
+        static::assertSame($path, $this->storage.'/hello-world.txt');
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }

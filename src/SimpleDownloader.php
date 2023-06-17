@@ -22,6 +22,10 @@ class SimpleDownloader
      */
     const CLOBBERING_SKIP = 1;
 
+    // @todo clone if exists (hello-world.txt => hello-world.txt.1).
+
+    // @todo update if exists.
+
     /**
      * Replace contents if file already exists.
      */

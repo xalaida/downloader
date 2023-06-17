@@ -151,7 +151,7 @@ class SimpleDownloader
             return $this->write($url, $file);
         });
 
-        $path = $path ?: ($dir . DIRECTORY_SEPARATOR . $this->guessFilename($response));
+        $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($response);
 
         $this->saveAs($tempPath, $path);
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Nevadskiy\Downloader;
+namespace Nevadskiy\Downloader\Filename;
 
-interface RandomFilenameGenerator
+interface FilenameGenerator
 {
     /**
      * Generate a random filename.

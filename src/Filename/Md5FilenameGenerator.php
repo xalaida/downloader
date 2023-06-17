@@ -1,8 +1,8 @@
 <?php
 
-namespace Nevadskiy\Downloader;
+namespace Nevadskiy\Downloader\Filename;
 
-class Md5FilenameGenerator implements RandomFilenameGenerator
+class Md5FilenameGenerator implements FilenameGenerator
 {
     /**
      * @inheritdoc

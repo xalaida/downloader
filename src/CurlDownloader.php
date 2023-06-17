@@ -2,11 +2,10 @@
 
 namespace Nevadskiy\Downloader;
 
-use InvalidArgumentException;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
-use Nevadskiy\Downloader\Exceptions\NetworkException;
+use Nevadskiy\Downloader\Exceptions\TransferException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\NullLogger;
@@ -218,43 +217,29 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
         return $this;
     }
 
-//    /**
-//     * @inheritdoc
-//     */
-//    public function download(string $url, string $destination = null): string
-//    {
-//        $path = $this->getDestinationPath($url, $destination ?: '.' . DIRECTORY_SEPARATOR);
-//
-//        $this->performDownload($path, $url);
-//
-//        return $this->normalizePath($path);
-//    }
-
+    /**
+     * @inheritdoc
+     */
     public function download(string $url, string $destination = null): string
     {
-        $destination = $destination ? rtrim($destination, '.') : null;
+        $parse = $this->parseDestination($destination);
 
-        if ($this->isDirectory($destination)) {
-            $directory = $destination;
-            $filename = null;
-        } else {
-            $directory = dirname($destination);
-            $filename = basename($destination);
-        }
+        $directory = $parse[0];
+        $filename = $parse[1];
 
-        $directory = $this->createDirectoryIfMissing($directory);
+        $temp = tempnam($directory ?: sys_get_temp_dir(), 'tmp');
 
-        $temp = tempnam($directory ?: sys_get_temp_dir(), 'downloads');
         $stream = fopen($temp, 'wb');
 
         $curl = curl_init();
 
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
-            CURLOPT_FAILONERROR => true,
+            //CURLOPT_FAILONERROR => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_FILE => $stream,
+            // @todo check how native curl script processes this (check wget api to download file with Modified header).
             CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$responseFilename, &$mimeType) {
                 if (stripos($header, 'Content-Disposition: attachment') !== false) {
                     preg_match('/filename="(.+)"/', $header, $matches);
@@ -278,6 +263,12 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
 
         $error = curl_error($curl);
 
+        $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+//        if ($status === 304) {
+//            throw new ResponseNotModifiedException();
+//        }
+
         $url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
 
         curl_close($curl);
@@ -289,7 +280,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
         if ($response === false) {
             unlink($temp);
 
-            throw new NetworkException($error);
+            throw new TransferException($error);
         }
 
         $filename = $filename ?: $responseFilename ?: $this->getFilename($url, $mimeType);
@@ -315,6 +306,40 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
         }
 
         return realpath($path);
+    }
+
+    protected function parseDestination(string $destination = null): array
+    {
+        $destination = $destination ? rtrim($destination, '.') : null;
+
+        if ($this->isDirectory($destination)) {
+            $directory = $destination;
+            $filename = null;
+        } else {
+            $directory = dirname($destination);
+            $filename = basename($destination);
+        }
+
+        $directory = $this->createDirectoryIfMissing($directory);
+
+        return [$directory, $filename];
+    }
+
+    protected function withCurl(array $options, callable $callback)
+    {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, $options);
+
+        $response = curl_exec($curl);
+
+        if ($response !== false) {
+            $callback($curl);
+        }
+
+        curl_close($curl);
+
+        return $response;
     }
 
     private function getFilename(string $url, string $mimeType = null): string
@@ -446,7 +471,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
             });
 
             $tempFile->save($path);
-        } catch (NetworkException $e) {
+        } catch (TransferException $e) {
             $tempFile->delete();
 
             throw $e;
@@ -516,7 +541,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
             $response = curl_exec($ch);
 
             if ($response === false) {
-                throw new NetworkException(curl_error($ch));
+                throw new TransferException(curl_error($ch));
             }
 
             if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 304) {
@@ -539,13 +564,5 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
         }
 
         return $normalized;
-    }
-
-    /**
-     * Normalize the path of the downloaded file.
-     */
-    protected function normalizePath(string $path): string
-    {
-        return realpath($path);
     }
 }

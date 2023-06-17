@@ -7,7 +7,7 @@ use InvalidArgumentException;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
-use Nevadskiy\Downloader\Exceptions\DownloaderException;
+use Nevadskiy\Downloader\Exceptions\TransferException;
 use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 
@@ -58,7 +58,7 @@ class SimpleDownloaderTest extends TestCase
             );
 
             static::fail('Expected DownloaderException was not thrown');
-        } catch (DownloaderException $e) {
+        } catch (TransferException $e) {
             static::assertDirectoryIsEmpty($this->storage);
         }
     }

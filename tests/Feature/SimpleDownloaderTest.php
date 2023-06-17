@@ -127,18 +127,6 @@ class SimpleDownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
 
-//    /** @test */
-//    public function it_downloads_files_with_url_filename_when_following_redirects()
-//    {
-//        $path = (new SimpleDownloader())
-//            ->followRedirects()
-//            ->download($this->serverUrl('/redirect'), $this->storage.'/hello-world.txt');
-//
-//        static::assertSame($this->storage.'/hello-world.txt', $path);
-//        static::assertFileExists($path);
-//        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
-//    }
-
     /** @test */
     public function it_generates_filename_from_url_when_destination_is_directory()
     {
@@ -152,5 +140,34 @@ class SimpleDownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
     }
 
-    // @todo test multiple downloads using same downloader...
+    /** @test */
+    public function it_generates_filename_from_url_after_redirects()
+    {
+        mkdir($this->storage.'/files', 0755);
+
+        $path = (new SimpleDownloader())
+            ->followRedirects()
+            ->download($this->serverUrl('/redirect'), $this->storage.'/files');
+
+        static::assertSame($path, $this->storage.'/files/hello-world.txt');
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_generates_filename_from_url_and_mime_type_when_destination_is_directory()
+    {
+        mkdir($this->storage.'/files', 0755);
+
+        $path = (new SimpleDownloader())
+            ->followRedirects()
+            ->download($this->serverUrl('/mime'), $this->storage.'/files');
+
+        static::assertSame($path, $this->storage.'/files/hello-world.txt');
+        static::assertFileExists($path);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+    }
+
+    // @todo when no content - throw exception + delete temp file
+    // @todo test multiple downloads using same downloader (singleton test)...
 }

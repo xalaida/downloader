@@ -5,6 +5,9 @@ http.createServer(function (req, res) {
     if (req.url === '/') {
         res.write('Welcome home!');
         res.end();
+    } else if (req.url === '/redirect') {
+        res.writeHead(301, { 'Location': req.url.replace('/redirect', '/redirect/hello-world.txt') });
+        res.end();
     } else if (req.url.startsWith('/redirect')) {
         res.writeHead(301, { 'Location': req.url.replace('/redirect', '/fixtures') });
         res.end();
@@ -40,6 +43,21 @@ http.createServer(function (req, res) {
             res.writeHead(403);
             res.end();
         }
+    } else if (req.url.startsWith('/content')) {
+        const filename = 'hello-world.txt';
+        const filepath = path.join(__dirname, filename);
+
+        fs.readFile(filepath, function (err, data) {
+            if (err) {
+                res.writeHead(404);
+                res.end(JSON.stringify(err));
+                return;
+            }
+
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.writeHead(200);
+            res.end(data);
+        });
     } else {
         res.writeHead(404);
         res.end();

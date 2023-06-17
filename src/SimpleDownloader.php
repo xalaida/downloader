@@ -69,8 +69,11 @@ class SimpleDownloader
 
     /**
      * Download a file from the URL and save to the given path.
+     *
+     * @throws TransferException
+     * @throws RuntimeException
      */
-    public function download(string $url, string $destination)
+    public function download(string $url, string $destination): string
     {
         if (is_dir($destination)) {
             $dir = $destination;
@@ -86,11 +89,11 @@ class SimpleDownloader
 
         $temp = tempnam($dir, 'tmp');
 
-        $this->newFile($temp, function ($file) use ($url) {
-            $this->transfer($url, $file);
+        $finalUrl = $this->newFile($temp, function ($file) use ($url) {
+            return $this->transfer($url, $file);
         });
 
-        $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($url);
+        $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($finalUrl);
 
         rename($temp, $path);
 
@@ -99,13 +102,18 @@ class SimpleDownloader
 
     /**
      * Write a file using the given callback.
+     *
+     * @template TValue
+     * @param string $path
+     * @param callable(): TValue $writer
+     * @return TValue
      */
     protected function newFile(string $path, callable $writer)
     {
         $file = fopen($path, 'wb');
 
         try {
-            $writer($file);
+            return $writer($file);
         } catch (Throwable $e) {
             unlink($path);
 
@@ -116,13 +124,13 @@ class SimpleDownloader
     }
 
     /**
-     * Fetch URL and write to the stream.
+     * Fetch URL and write to the file.
      */
-    protected function transfer(string $url, $stream)
+    protected function transfer(string $url, $file): string
     {
         curl_setopt_array($this->curl, [
             CURLOPT_URL => $url,
-            CURLOPT_FILE => $stream,
+            CURLOPT_FILE => $file,
         ]);
 
         try {
@@ -131,6 +139,8 @@ class SimpleDownloader
             if ($response === false) {
                 throw new TransferException(curl_error($this->curl));
             }
+
+            return curl_getinfo($this->curl, CURLINFO_EFFECTIVE_URL);
         } finally {
             $this->close();
         }

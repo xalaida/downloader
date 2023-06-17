@@ -30,9 +30,7 @@ class SimpleDownloader
     {
         $this->curl = curl_init();
 
-        curl_setopt_array($this->curl, [
-            CURLOPT_FAILONERROR => true,
-        ]);
+        curl_setopt($this->curl, CURLOPT_FAILONERROR, true);
     }
 
     /**

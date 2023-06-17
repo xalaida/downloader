@@ -82,7 +82,7 @@ class SimpleDownloaderTest extends TestCase
             (new SimpleDownloader())
                 ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
-            static::fail('Expected RuntimeException was not thrown');
+            static::fail('Expected RuntimeException was not thrown.');
         } catch (RuntimeException $e) {
             self::assertSame(sprintf('Directory [%s] is missing.', $this->storage.'/files'), $e->getMessage());
         }

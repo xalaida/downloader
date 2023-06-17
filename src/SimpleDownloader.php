@@ -28,7 +28,7 @@ class SimpleDownloader
         $temp = tempnam($dir, 'tmp');
 
         $this->newFile($temp, function ($file) use ($url) {
-            $this->transferToFile($url, $file);
+            $this->transfer($url, $file);
         });
 
         $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($url);
@@ -59,7 +59,7 @@ class SimpleDownloader
     /**
      * Fetch URL and write to the stream.
      */
-    protected function transferToFile(string $url, $stream)
+    protected function transfer(string $url, $stream)
     {
         $curl = curl_init();
 

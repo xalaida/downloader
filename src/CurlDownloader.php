@@ -453,7 +453,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
             $response = curl_exec($ch);
 
             if ($response === false) {
-                throw new NetworkException(curl_error($ch));
+                throw new TransferException(curl_error($ch));
             }
 
             if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 304) {

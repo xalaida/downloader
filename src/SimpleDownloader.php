@@ -28,11 +28,6 @@ class SimpleDownloader
     const CLOBBERING_REPLACE = 2;
 
     /**
-     * Update contents if the existing file is different from the downloaded one.
-     */
-    const CLOBBERING_UPDATE = 3;
-
-    /**
      * Indicates how the downloader should handle a file that already exists.
      *
      * @var int
@@ -110,16 +105,6 @@ class SimpleDownloader
     public function replaceIfExists(): self
     {
         $this->clobbering = self::CLOBBERING_REPLACE;
-
-        return $this;
-    }
-
-    /**
-     * Update contents if the existing file is different from the downloaded one.
-     */
-    public function updateIfExists(): self
-    {
-        $this->clobbering = self::CLOBBERING_UPDATE;
 
         return $this;
     }

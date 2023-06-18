@@ -41,7 +41,7 @@ class DownloaderTest extends TestCase
                 $this->storage.'/missing-file.txt'
             );
 
-            static::fail('Expected DownloaderException was not thrown.');
+            static::fail(sprintf('Expected [%s] was not thrown.', DownloaderException::class));
         } catch (DownloaderException $e) {
             static::assertDirectoryIsEmpty($this->storage);
         }
@@ -55,7 +55,7 @@ class DownloaderTest extends TestCase
         try {
             (new CurlDownloader())->download('invalid-url', $destination);
 
-            static::fail('Expected DownloaderException was not thrown.');
+            static::fail(sprintf('Expected [%s] was not thrown.', DownloaderException::class));
         } catch (DownloaderException $e) {
             self::assertSame('Could not resolve host: invalid-url', $e->getMessage());
             static::assertFileNotExists($destination);
@@ -71,7 +71,7 @@ class DownloaderTest extends TestCase
                 $this->storage.'/files/hello-world.txt'
             );
 
-            static::fail('Expected DirectoryMissingException was not thrown');
+            static::fail(sprintf('Expected [%s] was not thrown.', DirectoryMissingException::class));
         } catch (DirectoryMissingException $e) {
             static::assertSame($this->storage.'/files', $e->getPath());
         }
@@ -166,7 +166,7 @@ class DownloaderTest extends TestCase
                 ->failIfExists()
                 ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
-            static::fail('Expected FileExistsException was not thrown');
+            static::fail(sprintf('Expected [%s] was not thrown.', FileExistsException::class));
         } catch (FileExistsException $e) {
             static::assertStringEqualsFile($destination, 'Old content!');
         }

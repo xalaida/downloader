@@ -65,7 +65,7 @@ class SimpleDownloaderTest extends TestCase
             (new SimpleDownloader())
                 ->download($this->serverUrl('/fixtures/wrong-file.txt'), $this->storage.'/missing-file.txt');
 
-            static::fail('Expected DownloaderException was not thrown.');
+            static::fail(sprintf('Expected [%s] was not thrown.', DownloaderException::class));
         } catch (DownloaderException $e) {
             static::assertDirectoryIsEmpty($this->storage);
         }
@@ -77,7 +77,7 @@ class SimpleDownloaderTest extends TestCase
         try {
             (new SimpleDownloader())->download('invalid-url', $this->storage.'/invalid-url.txt');
 
-            static::fail('Expected DownloaderException was not thrown.');
+            static::fail(sprintf('Expected [%s] was not thrown.', DownloaderException::class));
         } catch (DownloaderException $e) {
             self::assertSame('Could not resolve host: invalid-url', $e->getMessage());
             static::assertDirectoryIsEmpty($this->storage);
@@ -91,7 +91,7 @@ class SimpleDownloaderTest extends TestCase
             (new SimpleDownloader())
                 ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
-            static::fail('Expected RuntimeException was not thrown.');
+            static::fail(sprintf('Expected [%s] was not thrown.', RuntimeException::class));
         } catch (RuntimeException $e) {
             self::assertSame(sprintf('Directory [%s] is missing.', $this->storage.'/files'), $e->getMessage());
         }

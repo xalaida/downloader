@@ -2,6 +2,7 @@
 
 namespace Nevadskiy\Downloader;
 
+use Nevadskiy\Downloader\Exceptions\DestinationFileMissingException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\NotModifiedResponseException;
@@ -165,12 +166,11 @@ class SimpleDownloader
     {
         list($dir, $path) = $this->parseDestination($destination);
 
-        $tempPath = $dir . DIRECTORY_SEPARATOR . $this->tempFilenameGenerator->generate();
-
-        // @todo another option (not clobbering) maybe withTimestamps()
-        if ($this->clobbering === self::CLOBBERING_UPDATE && $path && file_exists($path)) {
-            $this->withHeaders($this->getIfModifiedSinceHeader($path));
+        if ($this->clobbering === self::CLOBBERING_UPDATE) {
+            $this->includeTimestamps($path);
         }
+
+        $tempPath = $dir . DIRECTORY_SEPARATOR . $this->tempFilenameGenerator->generate();
 
         try {
             $response = $this->newFile($tempPath, function ($file) use ($url) {
@@ -205,6 +205,18 @@ class SimpleDownloader
         }
 
         return [$dir, $path];
+    }
+
+    /**
+     * Use the file timestamps in the cURL request.
+     */
+    protected function includeTimestamps(string $path = null)
+    {
+        if ($path === null) {
+            throw DestinationFileMissingException::new();
+        } else if (file_exists($path)) {
+            $this->withHeaders($this->getIfModifiedSinceHeader($path));
+        }
     }
 
     /**
@@ -247,9 +259,10 @@ class SimpleDownloader
         $curl = curl_init();
 
         curl_setopt_array($curl, [
+            CURLOPT_FAILONERROR => true,
             CURLOPT_URL => $url,
             CURLOPT_FILE => $file,
-            CURLOPT_FAILONERROR => true,
+            // CURLOPT_FILETIME => true,
             CURLOPT_HTTPHEADER => $this->buildHeaders(),
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
@@ -280,18 +293,15 @@ class SimpleDownloader
                 throw new DownloaderException(curl_error($curl));
             }
 
-            $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-            if ($status === 304) {
+            if (curl_getinfo($curl, CURLINFO_HTTP_CODE) === 304) {
                 throw new NotModifiedResponseException();
             }
 
-            $url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
-
             return [
-                'url' => $url,
-                'content_type' => $contentType,
                 'filename' => $filename,
+                'content_type' => $contentType,
+                'url' => curl_getinfo($curl, CURLINFO_EFFECTIVE_URL),
+                // 'filetime' => curl_getinfo($curl, CURLINFO_FILETIME),
             ];
         } finally {
             curl_close($curl);

@@ -3,6 +3,7 @@
 namespace Nevadskiy\Downloader\Tests\Feature;
 
 use DateTime;
+use Nevadskiy\Downloader\Exceptions\DestinationFileMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Filename\FilenameGenerator;
 use Nevadskiy\Downloader\SimpleDownloader;
@@ -28,7 +29,7 @@ class ClobberDownloaderTest extends TestCase
                 ->setTempFilenameGenerator($tempGenerator)
                 ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
-            static::fail('Expected FileExistsException was not thrown');
+            static::fail(sprintf('Expected [%s] was not thrown.', FileExistsException::class));
         } catch (FileExistsException $e) {
             static::assertStringEqualsFile($destination, 'Old content!');
             static::assertFileNotExists($this->storage.'/TEMPFILE');
@@ -97,6 +98,21 @@ class ClobberDownloaderTest extends TestCase
         static::assertStringEqualsFile($destination, 'Old content!');
     }
 
+    /** @test */
+    public function it_throws_exception_when_destination_is_directory()
+    {
+        file_put_contents($this->storage.'/hello-world.txt', 'Old content!');
+
+        try {
+            (new SimpleDownloader())
+                ->updateIfExists()
+                ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
+
+            static::fail(sprintf('Expected [%s] was not thrown.', DestinationFileMissingException::class));
+        } catch (DestinationFileMissingException $e) {
+            static::assertStringEqualsFile($this->storage.'/hello-world.txt', 'Old content!');
+        }
+    }
+
     // @todo use response timestamp header.
-    // @todo test when file name not provided.
 }

@@ -150,6 +150,16 @@ class SimpleDownloaderTest extends TestCase
     }
 
     /** @test */
+    public function it_downloads_file_to_directory_with_separator_ending()
+    {
+        $destination = (new SimpleDownloader())
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/');
+
+        static::assertSame($this->storage.'/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
     public function it_downloads_file_to_directory_with_dot_ending()
     {
         $destination = (new SimpleDownloader())

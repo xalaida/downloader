@@ -10,7 +10,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
         php: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2' ]
-        dependencies: [ 'lowest', 'highest' ]
+        dependencies: [ lowest, highest ]
 
     runs-on: ${{ matrix.os }}
 
@@ -23,13 +23,13 @@ jobs:
         with:
           node-version: '16.x'
 
-      - name: Start testing server
-        run: |
-          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-           node tests/server.js &
-          else
-           node tests/server.js
-          fi
+      - name: Start testing server on Ubuntu OS
+        if: matrix.os == 'ubuntu-latest'
+        run: node tests/server.js &
+
+      - name: Start testing server on Windows OS
+        if: matrix.os == 'windows-latest'
+        run: Start-Process -NoNewWindow node tests/server.js
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2

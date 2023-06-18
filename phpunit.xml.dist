@@ -3,6 +3,7 @@
     bootstrap="vendor/autoload.php"
     backupGlobals="false"
     backupStaticAttributes="false"
+    cacheResultFile=".cache/.phpunit.result.cache"
     colors="true"
     verbose="true"
     convertErrorsToExceptions="true"

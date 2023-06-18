@@ -16,10 +16,8 @@ RUN apt-get update \
 # Clean up the apt cache
     && rm -rf /var/lib/apt/lists/*
 
-# Install composer
-ENV COMPOSER_ALLOW_SUPERUSER 1
-RUN php -r "readfile('https://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer
-RUN chmod 0755 /usr/bin/composer
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-# Set up default directory
+# Set up working directory
 WORKDIR /app

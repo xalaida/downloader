@@ -12,9 +12,12 @@ use Nevadskiy\Downloader\ExtensionGuesser\SymfonyExtensionGuesser;
 use Nevadskiy\Downloader\FilenameGenerator\FilenameGenerator;
 use Nevadskiy\Downloader\FilenameGenerator\Md5FilenameGenerator;
 use Nevadskiy\Downloader\FilenameGenerator\TempFilenameGenerator;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Throwable;
 
-class CurlDownloader implements Downloader
+class CurlDownloader implements Downloader, LoggerAwareInterface
 {
     /**
      * Throw an exception if the file already exists.
@@ -102,6 +105,13 @@ class CurlDownloader implements Downloader
     protected $randomFilenameGenerator;
 
     /**
+     * The logger interface.
+     *
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * Make a new downloader instance.
      */
     public function __construct()
@@ -109,6 +119,7 @@ class CurlDownloader implements Downloader
         $this->extensionGuesser = new SymfonyExtensionGuesser();
         $this->tempFilenameGenerator = new TempFilenameGenerator();
         $this->randomFilenameGenerator = new Md5FilenameGenerator();
+        $this->logger = new NullLogger();
     }
 
     /**
@@ -227,7 +238,7 @@ class CurlDownloader implements Downloader
         [$directory, $path] = $this->parseDestination($destination);
 
         if ($this->clobbering === self::CLOBBERING_UPDATE) {
-            $this->includeTimestamps($path);
+            $this->includeTimestamp($path);
         }
 
         $tempPath = $directory . $this->tempFilenameGenerator->generate();
@@ -296,12 +307,20 @@ class CurlDownloader implements Downloader
     /**
      * Use the file timestamps in the cURL request.
      */
-    protected function includeTimestamps(string $path = null): void
+    protected function includeTimestamp(string $path = null): void
     {
         if ($path === null) {
             throw FilenameMissingException::new();
         } elseif (file_exists($path)) {
+            $this->logger->debug('File exists. Including "If-Modified-Since" header with timestamp.', [
+                'path' => $path,
+            ]);
+
             $this->withHeaders($this->getIfModifiedSinceHeader($path));
+        } else {
+            $this->logger->debug('File is missing. Skipping "If-Modified-Since" header with timestamp.', [
+                'path' => $path,
+            ]);
         }
     }
 
@@ -504,5 +523,13 @@ class CurlDownloader implements Downloader
         $this->randomFilenameGenerator = $generator;
 
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 }

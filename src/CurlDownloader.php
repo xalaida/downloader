@@ -299,9 +299,15 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
             return;
         }
 
-        if (! $this->makesDirectory || ! mkdir($directory, $this->directoryPermissions, $this->makesDirectoryRecursively)) {
+        if (! $this->makesDirectory) {
             throw DirectoryMissingException::from($directory);
         }
+
+        $this->logger->notice('Creating missing directory.', [
+            'directory' => $directory,
+        ]);
+
+        mkdir($directory, $this->directoryPermissions, $this->makesDirectoryRecursively);
     }
 
     /**
@@ -477,19 +483,53 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
     protected function saveAs(string $tempPath, string $path, array $response): void
     {
         if (! file_exists($path)) {
+            $this->logger->debug('Saving downloaded file.', [
+                'tempPath' => $tempPath,
+                'path' => $path,
+            ]);
+
             rename($tempPath, $path);
         } elseif ($this->clobbering === self::CLOBBERING_FAIL) {
+            $this->logger->debug('File already exists, failing.', [
+                'path' => $path,
+                'tempPath' => $tempPath,
+            ]);
+
             unlink($tempPath);
 
             throw FileExistsException::from($path);
         } elseif ($this->clobbering === self::CLOBBERING_SKIP) {
+            $this->logger->debug('File already exists, skipping.', [
+                'tempPath' => $tempPath,
+                'path' => $path,
+            ]);
+
             unlink($tempPath);
         } elseif ($this->clobbering === self::CLOBBERING_REPLACE) {
+            $this->logger->debug('File already exists, replacing.', [
+                'tempPath' => $tempPath,
+                'path' => $path,
+            ]);
+
             rename($tempPath, $path);
         } elseif ($this->clobbering === self::CLOBBERING_UPDATE) {
-            if ($response['filetime'] === -1 || filemtime($path) < $response['filetime']) {
+            if ($response['filetime'] === -1 || $filetime = filemtime($path) < $response['filetime']) {
+                $this->logger->debug('File already exists with older timestamp, replacing.', [
+                    'tempPath' => $tempPath,
+                    'path' => $path,
+                    'tempFiletime' => $response['filetime'],
+                    'filetime' => $filetime,
+                ]);
+
                 rename($tempPath, $path);
             } else {
+                $this->logger->debug('File already exists with newer timestamp, skipping.', [
+                    'tempPath' => $tempPath,
+                    'path' => $path,
+                    'tempFiletime' => $response['filetime'],
+                    'filetime' => $filetime,
+                ]);
+
                 unlink($tempPath);
             }
         }

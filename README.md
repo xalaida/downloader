@@ -42,7 +42,6 @@ The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 
 ## 🔨 To Do List
 
-- [ ] add logger
 - [ ] specify lowest versions
 - [ ] continue downloading partially-downloaded files
 - [ ] sync timestamps with a file on the server

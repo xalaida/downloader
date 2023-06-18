@@ -6,7 +6,7 @@ services:
       context: ./
       dockerfile: .docker/${PHP_VERSION:-php7.1}/Dockerfile
     environment:
-      - TESTING_SERVER_URL=http://server:4020
+      - TESTING_SERVER_URL=http://server:8000
     volumes:
       - ./:/app
     links:
@@ -17,7 +17,7 @@ services:
     volumes:
       - ./:/app
     expose:
-      - 4020
+      - 8000
     ports:
-      - "4020:4020"
+      - "8000:8000"
     command: node /app/tests/server.js

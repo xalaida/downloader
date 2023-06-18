@@ -43,7 +43,7 @@ class TestCase extends BaseTestCase
      */
     protected function url(string $path = '/'): string
     {
-        $url = $_ENV['TESTING_SERVER_URL'] ?? 'http://localhost:4020';
+        $url = $_ENV['TESTING_SERVER_URL'] ?? 'http://localhost:8000';
 
         return $url.'/'.ltrim($path, '/');
     }

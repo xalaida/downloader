@@ -244,7 +244,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
         $tempPath = $directory . $this->tempFilenameGenerator->generate();
 
         try {
-            $response = $this->newFile($tempPath, function ($file) use ($url) {
+            $response = $this->usingTempFile($tempPath, function ($file) use ($url) {
                 return $this->write($url, $file);
             });
         } catch (ResponseNotModifiedException $e) {
@@ -339,22 +339,36 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
     }
 
     /**
+     * Write a temp file using the given callback.
+     *
+     * @template TValue
+     * @param callable(resource $file): TValue $writer
+     * @return TValue
+     */
+    protected function usingTempFile(string $path, callable $writer)
+    {
+        try {
+            return $this->usingFile($path, $writer);
+        } catch (Throwable $e) {
+            unlink($path);
+
+            throw $e;
+        }
+    }
+
+    /**
      * Write a file using the given callback.
      *
      * @template TValue
      * @param callable(resource $file): TValue $writer
      * @return TValue
      */
-    protected function newFile(string $path, callable $writer)
+    protected function usingFile(string $path, callable $writer)
     {
         $file = fopen($path, 'wb');
 
         try {
             return $writer($file);
-        } catch (Throwable $e) {
-            unlink($path);
-
-            throw $e;
         } finally {
             fclose($file);
         }

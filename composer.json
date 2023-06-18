@@ -16,7 +16,7 @@
         "symfony/mime": "^4.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.0|^8.0",
+        "phpunit/phpunit": "^6.0|^8.5.14",
         "friendsofphp/php-cs-fixer": "^2.19"
     },
     "autoload": {

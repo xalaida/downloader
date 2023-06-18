@@ -1,35 +1,35 @@
-# Build docker containers
+# Build Docker containers
 install: build composer.install
 
 # Run the testing server
 server:
 	docker compose up -d server
 
-# Start docker containers
+# Start Docker containers
 up:
 	docker compose up -d
 
-# Stop docker containers
+# Stop Docker containers
 down:
 	docker compose down
 
-# Restart docker containers
+# Restart Docker containers
 restart:
 	docker compose restart
 
-# Build docker containers
+# Build Docker containers
 build:
 	docker compose build
 
-# Show status of docker containers
+# Show status of Docker containers
 ps:
 	docker compose ps
 
-# Install app dependencies
+# Install Composer dependencies
 composer.install:
 	docker compose run --rm app composer install
 
-# Update app dependencies
+# Update Composer dependencies
 composer.update:
 	docker compose run --rm app composer update
 
@@ -41,12 +41,12 @@ composer.lowest:
 composer.outdated:
 	docker compose run --rm app composer outdated
 
-# Uninstall composer dependencies
+# Uninstall Composer dependencies
 composer.uninstall:
 	sudo rm -rf vendor
 	sudo rm composer.lock
 
-# Dump composer autoload
+# Dump Composer autoload
 autoload:
 	docker compose run --rm app composer dump-autoload
 
@@ -54,15 +54,15 @@ autoload:
 test:
 	docker compose run --rm app vendor/bin/phpunit
 
-# Generate a coverage report as html
+# Generate a coverage report as HTML
 coverage.html:
 	docker compose run --rm app vendor/bin/phpunit --coverage-html tests/report
 
-# Generate a coverage report as text
+# Generate a coverage report as plain text
 coverage.text:
 	docker compose run --rm app vendor/bin/phpunit --coverage-text
 
-# Coverage text alias
+# Alias to generate a coverage report as plain text
 coverage: coverage.text
 
 # Fix the code style

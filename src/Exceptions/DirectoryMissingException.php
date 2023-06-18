@@ -2,9 +2,7 @@
 
 namespace Nevadskiy\Downloader\Exceptions;
 
-use Exception;
-
-class DirectoryMissingException extends Exception
+class DirectoryMissingException extends DownloaderException
 {
     /**
      * A path of the missing directory.

@@ -2,10 +2,10 @@
 
 namespace Nevadskiy\Downloader\Tests\Feature;
 
+use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
-use RuntimeException;
 
 /**
  * @todo split into multiple tests.
@@ -121,13 +121,22 @@ class SimpleDownloaderTest extends TestCase
             (new SimpleDownloader())
                 ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
-            static::fail(sprintf('Expected [%s] was not thrown.', RuntimeException::class));
-        } catch (RuntimeException $e) {
-            self::assertSame(sprintf('Directory [%s] is missing.', $this->storage.'/files'), $e->getMessage());
+            static::fail(sprintf('Expected [%s] was not thrown.', DirectoryMissingException::class));
+        } catch (DirectoryMissingException $e) {
+            self::assertSame(sprintf('Directory [%s] does not exits.', $this->storage.'/files'), $e->getMessage());
         }
     }
 
-    // it_can_create_destination_directory_when_it_is_missing
+    /** @test */
+    public function it_creates_destination_directory_when_it_is_missing()
+    {
+        $destination = (new SimpleDownloader())
+            ->allowDirectoryCreation()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
+
+        static::assertSame($this->storage.'/files/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
 
     // it_can_create_destination_directory_recursively_when_it_is_missing
 

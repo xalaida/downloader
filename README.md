@@ -11,11 +11,11 @@ Download files using PHP and Curl.
 
 ## ✅ Requirements
 
-- PHP 7.0 or newer
+- PHP 7.1 or newer
 
 ## 🔌 Installation
 
-Install the package via composer.
+Install the package via Composer:
 
 ```bash
 composer require nevadskiy/downloader

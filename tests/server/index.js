@@ -19,8 +19,15 @@ http.createServer(function (req, res) {
                 return;
             }
 
-            res.setHeader('Content-Type', 'text/plain');
-            res.end(data);
+            fs.stat(filePath, function (err, stats) {
+                const lastModifiedAt = new Date(stats.mtime)
+                lastModifiedAt.setMilliseconds(0);
+                res.writeHead(200, {
+                    'Last-Modified': lastModifiedAt.toUTCString(),
+                    'Content-Type': 'text/plain'
+                });
+                res.end(data);
+            })
         });
     } else if (req.url === '/redirect') {
         res.writeHead(301, { 'Location': req.url.replace('/redirect', '/redirect/hello-world.txt') });

@@ -84,7 +84,7 @@ class ClobberDownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_update_old_content_when_file_already_exists_and_has_newer_modification_date()
+    public function it_does_not_update_old_content_when_file_already_exists_and_was_not_modified_since()
     {
         $destination = $this->storage.'/hello-world.txt';
 
@@ -93,6 +93,21 @@ class ClobberDownloaderTest extends TestCase
         $destination = (new SimpleDownloader())
             ->updateIfExists()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+
+        static::assertSame($this->storage.'/hello-world.txt', $destination);
+        static::assertStringEqualsFile($destination, 'Old content!');
+    }
+
+    /** @test */
+    public function it_does_not_update_old_content_when_file_already_exists_and_has_newer_last_modified_timestamp()
+    {
+        $destination = $this->storage.'/hello-world.txt';
+
+        file_put_contents($destination, 'Old content!');
+
+        $destination = (new SimpleDownloader())
+            ->updateIfExists()
+            ->download($this->serverUrl('/hello-world'), $destination);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
         static::assertStringEqualsFile($destination, 'Old content!');
@@ -113,6 +128,4 @@ class ClobberDownloaderTest extends TestCase
             static::assertStringEqualsFile($this->storage.'/hello-world.txt', 'Old content!');
         }
     }
-
-    // @todo use response timestamp header.
 }

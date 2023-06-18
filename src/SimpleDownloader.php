@@ -26,8 +26,6 @@ class SimpleDownloader
 
     // @todo clone if exists (hello-world.txt => hello-world.txt.1).
 
-    // @todo update if exists (last-modified header and if-modified-since header). Check cURL CURLOPT_FILETIME options.
-
     /**
      * Replace contents if file already exists.
      */
@@ -182,7 +180,7 @@ class SimpleDownloader
 
         $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($response);
 
-        $this->saveAs($tempPath, $path);
+        $this->saveAs($tempPath, $path, $response);
 
         return $path;
     }
@@ -262,7 +260,7 @@ class SimpleDownloader
             CURLOPT_FAILONERROR => true,
             CURLOPT_URL => $url,
             CURLOPT_FILE => $file,
-            // CURLOPT_FILETIME => true,
+            CURLOPT_FILETIME => true,
             CURLOPT_HTTPHEADER => $this->buildHeaders(),
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
@@ -301,7 +299,7 @@ class SimpleDownloader
                 'filename' => $filename,
                 'content_type' => $contentType,
                 'url' => curl_getinfo($curl, CURLINFO_EFFECTIVE_URL),
-                // 'filetime' => curl_getinfo($curl, CURLINFO_FILETIME),
+                'filetime' => curl_getinfo($curl, CURLINFO_FILETIME),
             ];
         } finally {
             curl_close($curl);
@@ -365,7 +363,7 @@ class SimpleDownloader
     /**
      * Save a temp file to the given path.
      */
-    protected function saveAs(string $tempPath, string $path)
+    protected function saveAs(string $tempPath, string $path, array $response)
     {
         if (! file_exists($path)) {
             rename($tempPath, $path);
@@ -378,7 +376,11 @@ class SimpleDownloader
         } else if ($this->clobbering === self::CLOBBERING_REPLACE) {
             rename($tempPath, $path);
         } else if ($this->clobbering === self::CLOBBERING_UPDATE) {
-            rename($tempPath, $path);
+            if ($response['filetime'] === -1 || filemtime($path) < $response['filetime']) {
+                rename($tempPath, $path);
+            } else {
+                unlink($tempPath);
+            }
         }
     }
 

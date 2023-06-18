@@ -110,7 +110,7 @@ class ClobberTest extends TestCase
     /**
      * @test
      */
-    public function it_does_not_update_old_content_when_file_already_exists_and_has_newer_last_modified_timestamp(): void
+    public function it_does_not_update_content_when_file_already_exists_and_has_newer_last_modified_timestamp(): void
     {
         $destination = $this->storage.'/hello-world.txt';
 

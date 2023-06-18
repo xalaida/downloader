@@ -40,7 +40,7 @@ Thank you for considering contributing. Please see [CONTRIBUTING](CONTRIBUTING.m
 
 The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 
-## To Do List
+## 🔨 To Do List
 
 - [ ] continue downloading partially-downloaded files
 - [ ] sync timestamps with a file on the server

@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: ./
-      dockerfile: ./runtimes/${APP_DOCKER_RUNTIME:-php7.0}/Dockerfile
+      dockerfile: .docker/${PHP_VERSION:-php7.0}/Dockerfile
     environment:
       - TESTING_SERVER_URL=http://server:8888
     volumes:

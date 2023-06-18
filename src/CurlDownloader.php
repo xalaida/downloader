@@ -2,7 +2,7 @@
 
 namespace Nevadskiy\Downloader;
 
-use Nevadskiy\Downloader\Exceptions\DestinationFileMissingException;
+use Nevadskiy\Downloader\Exceptions\FilenameMissingException;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
@@ -297,7 +297,7 @@ class CurlDownloader
     protected function includeTimestamps(string $path = null): void
     {
         if ($path === null) {
-            throw DestinationFileMissingException::new();
+            throw FilenameMissingException::new();
         } elseif (file_exists($path)) {
             $this->withHeaders($this->getIfModifiedSinceHeader($path));
         }

@@ -4,7 +4,7 @@ namespace Nevadskiy\Downloader\Tests;
 
 use DateTime;
 use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\Exceptions\DestinationFileMissingException;
+use Nevadskiy\Downloader\Exceptions\FilenameMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\FilenameGenerator\FilenameGenerator;
 
@@ -138,8 +138,8 @@ class ClobberTest extends TestCase
                 ->updateIfExists()
                 ->download($this->url('/hello-world.txt'), $this->storage);
 
-            static::fail(sprintf('Expected [%s] was not thrown.', DestinationFileMissingException::class));
-        } catch (DestinationFileMissingException $e) {
+            static::fail(sprintf('Expected [%s] was not thrown.', FilenameMissingException::class));
+        } catch (FilenameMissingException $e) {
             static::assertStringEqualsFile($this->storage.'/hello-world.txt', 'Old content!');
         }
     }

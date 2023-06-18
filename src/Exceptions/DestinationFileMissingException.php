@@ -2,6 +2,9 @@
 
 namespace Nevadskiy\Downloader\Exceptions;
 
+/**
+ * @todo rename to make it clear when it can be thrown (when impossible to include timestamps according to destination path)
+ */
 class DestinationFileMissingException extends DownloaderException
 {
     /**

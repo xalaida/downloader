@@ -149,7 +149,15 @@ class SimpleDownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
-    // it_can_create_destination_directory_recursively_when_it_is_missing
+    /** @test */
+    public function it_downloads_file_to_directory_with_dot_ending()
+    {
+        $destination = (new SimpleDownloader())
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/.');
+
+        static::assertSame($this->storage.'/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
 
     // it_can_specify_destination_directory_with_dot_syntax
 

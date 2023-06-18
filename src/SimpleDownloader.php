@@ -263,7 +263,7 @@ class SimpleDownloader
     protected function parseDestination(string $destination): array
     {
         if (is_dir($destination)) {
-            $dir = $destination;
+            $dir = rtrim($destination, DIRECTORY_SEPARATOR . '.');
             $path = null;
         } else {
             $dir = dirname($destination);

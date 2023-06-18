@@ -171,7 +171,7 @@ class SimpleDownloader
      * Write a file using the given callback.
      *
      * @template TValue
-     * @param callable(): TValue $writer
+     * @param callable(resource $file): TValue $writer
      * @return TValue
      */
     protected function newFile(string $path, callable $writer)

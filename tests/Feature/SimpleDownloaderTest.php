@@ -138,9 +138,18 @@ class SimpleDownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
-    // it_can_create_destination_directory_recursively_when_it_is_missing
+    /** @test */
+    public function it_creates_destination_directory_recursively_when_it_is_missing()
+    {
+        $destination = (new SimpleDownloader())
+            ->allowRecursiveDirectoryCreation()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/hello-world.txt');
 
-    // it_downloads_file_by_destination_that_is_directory
+        static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    // it_can_create_destination_directory_recursively_when_it_is_missing
 
     // it_can_specify_destination_directory_with_dot_syntax
 

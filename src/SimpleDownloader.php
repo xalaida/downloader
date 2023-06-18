@@ -10,7 +10,6 @@ use Nevadskiy\Downloader\Exceptions\NotModifiedResponseException;
 use Nevadskiy\Downloader\Filename\FilenameGenerator;
 use Nevadskiy\Downloader\Filename\Md5FilenameGenerator;
 use Nevadskiy\Downloader\Filename\TempFilenameGenerator;
-use RuntimeException;
 use Throwable;
 
 class SimpleDownloader
@@ -57,18 +56,18 @@ class SimpleDownloader
     protected $makesDirectory = false;
 
     /**
-     * Indicates if it makes a destination directory recursively when it is missing.
-     *
-     * @var bool
-     */
-    protected $makesDirectoryRecursively = false;
-
-    /**
      * Permissions of a destination directory that can be made if it is missing.
      *
      * @var int
      */
     protected $directoryPermissions = self::DEFAULT_DIRECTORY_PERMISSIONS;
+
+    /**
+     * Indicates if it makes a destination directory recursively when it is missing.
+     *
+     * @var bool
+     */
+    protected $makesDirectoryRecursively = false;
 
     /**
      * The header list to be included in the cURL request.
@@ -163,13 +162,21 @@ class SimpleDownloader
     /**
      * Make a destination directory when it is missing.
      */
-    public function allowDirectoryCreation(bool $recursive = false, int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): self
+    public function allowDirectoryCreation(int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS, bool $recursive = false): self
     {
         $this->makesDirectory = true;
-        $this->makesDirectoryRecursively = $recursive;
         $this->directoryPermissions = $permissions;
+        $this->makesDirectoryRecursively = $recursive;
 
         return $this;
+    }
+
+    /**
+     * Recursively make a destination directory when it is missing.
+     */
+    public function allowRecursiveDirectoryCreation(int $permissions = self::DEFAULT_DIRECTORY_PERMISSIONS): self
+    {
+        return $this->allowDirectoryCreation($permissions, true);
     }
 
     /**

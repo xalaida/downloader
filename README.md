@@ -42,6 +42,7 @@ The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 
 ## 🔨 To Do List
 
+- [ ] add logger
 - [ ] continue downloading partially-downloaded files
 - [ ] sync timestamps with a file on the server
 - [ ] stats with download speed using curl `CURLINFO_SPEED_DOWNLOAD` option

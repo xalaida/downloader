@@ -34,6 +34,7 @@ class ClobberTest extends TestCase
         } catch (FileExistsException $e) {
             static::assertStringEqualsFile($destination, 'Old content!');
             static::assertFileNotExists($this->storage.'/TEMPFILE');
+            static::assertSame($destination, $e->getPath());
         }
     }
 

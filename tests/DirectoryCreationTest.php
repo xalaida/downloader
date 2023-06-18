@@ -18,7 +18,7 @@ class DirectoryCreationTest extends TestCase
 
             static::fail(sprintf('Expected [%s] was not thrown.', DirectoryMissingException::class));
         } catch (DirectoryMissingException $e) {
-            self::assertSame(sprintf('Directory [%s] does not exist.', $this->storage.'/files'), $e->getMessage());
+            self::assertSame($this->storage.'/files', $e->getPath());
         }
     }
 

@@ -34,12 +34,25 @@ class FilenameTest extends TestCase
     /**
      * @test
      */
-    public function it_generates_filename_from_url_and_mime_type_when_destination_is_directory(): void
+    public function it_generates_filename_from_url_and_content_type_when_destination_is_directory(): void
     {
         $path = (new CurlDownloader())
             ->download($this->url('/hello-world'), $this->storage);
 
         static::assertSame($path, $this->storage.'/hello-world.txt');
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $path);
+    }
+
+    /**
+     * @test
+     */
+    public function it_generates_filename_from_custom_content_type_when_destination_is_directory(): void
+    {
+        $path = (new CurlDownloader())
+            ->withContentTypes(['text/plain' => 'php'])
+            ->download($this->url('/hello-world'), $this->storage);
+
+        static::assertSame($path, $this->storage.'/hello-world.php');
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $path);
     }
 

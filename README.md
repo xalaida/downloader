@@ -3,7 +3,7 @@
 # Downloader
 
 [![PHPUnit](https://img.shields.io/github/actions/workflow/status/nevadskiy/downloader/phpunit.yml?branch=master)](https://packagist.org/packages/nevadskiy/downloader)
-[![Code Coverage](https://img.shields.io/codecov/c/github/nevadskiy/downloader?token=9X6AQQYCPA)](https://packagist.org/packages/nevadskiy/downloader)
+[![Code Coverage](https://img.shields.io/codecov/c/github/nevadskiy/downloader)](https://packagist.org/packages/nevadskiy/downloader)
 [![Latest Stable Version](https://img.shields.io/packagist/v/nevadskiy/downloader)](https://packagist.org/packages/nevadskiy/downloader)
 [![License](https://img.shields.io/github/license/nevadskiy/downloader)](https://packagist.org/packages/nevadskiy/downloader)
 

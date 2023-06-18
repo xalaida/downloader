@@ -57,7 +57,7 @@ class ClobberTest extends TestCase
     /**
      * @test
      */
-    public function it_replace_content_of_existing_file(): void
+    public function it_replaces_content_of_existing_file(): void
     {
         $destination = $this->storage.'/hello-world.txt';
 

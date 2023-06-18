@@ -6,7 +6,7 @@ use Nevadskiy\Downloader\Exceptions\DestinationFileMissingException;
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
-use Nevadskiy\Downloader\Exceptions\NotModifiedResponseException;
+use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
 use Nevadskiy\Downloader\Filename\FilenameGenerator;
 use Nevadskiy\Downloader\Filename\Md5FilenameGenerator;
 use Nevadskiy\Downloader\Filename\TempFilenameGenerator;
@@ -243,7 +243,7 @@ class CurlDownloader
             $response = $this->newFile($tempPath, function ($file) use ($url) {
                 return $this->write($url, $file);
             });
-        } catch (NotModifiedResponseException $e) {
+        } catch (ResponseNotModifiedException $e) {
             return $path;
         }
 
@@ -384,7 +384,7 @@ class CurlDownloader
             }
 
             if (curl_getinfo($curl, CURLINFO_HTTP_CODE) === 304) {
-                throw new NotModifiedResponseException();
+                throw new ResponseNotModifiedException();
             }
 
             return [

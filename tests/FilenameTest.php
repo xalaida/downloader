@@ -73,4 +73,18 @@ class FilenameTest extends TestCase
         static::assertEquals($this->storage.'/RANDOMFILE', $path);
         static::assertStringEqualsFile($path, 'Welcome home!');
     }
+
+    /**
+     * @test
+     */
+    public function it_generates_random_filename_using_default_generator_when_no_content_type_and_destination_is_directory(): void
+    {
+        $path = (new CurlDownloader())
+            ->download($this->url(), $this->storage);
+
+        $filename = substr($path, strlen($this->storage) + 1);
+
+        static::assertSame(32, strlen($filename));
+        static::assertStringEqualsFile($path, 'Welcome home!');
+    }
 }

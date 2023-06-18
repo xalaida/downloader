@@ -27,6 +27,7 @@ class ClobberTest extends TestCase
 
         try {
             (new CurlDownloader())
+                ->failIfExists()
                 ->setTempFilenameGenerator($tempGenerator)
                 ->download($this->url('/hello-world.txt'), $destination);
 

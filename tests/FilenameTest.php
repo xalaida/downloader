@@ -3,6 +3,7 @@
 namespace Nevadskiy\Downloader\Tests;
 
 use Nevadskiy\Downloader\CurlDownloader;
+use Nevadskiy\Downloader\ExtensionGuesser\ExtensionGuesser;
 use Nevadskiy\Downloader\FilenameGenerator\FilenameGenerator;
 
 class FilenameTest extends TestCase
@@ -48,8 +49,15 @@ class FilenameTest extends TestCase
      */
     public function it_generates_filename_from_custom_content_type_when_destination_is_directory(): void
     {
+        $guesser = $this->createMock(ExtensionGuesser::class);
+
+        $guesser->expects(static::once())
+            ->method('getExtension')
+            ->with(static::identicalTo('text/plain'))
+            ->willReturn('php');
+
         $path = (new CurlDownloader())
-            ->withContentTypes(['text/plain' => 'php'])
+            ->setExtensionGuesser($guesser)
             ->download($this->url('/hello-world'), $this->storage);
 
         static::assertSame($path, $this->storage.'/hello-world.php');

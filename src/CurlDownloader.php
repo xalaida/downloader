@@ -7,9 +7,11 @@ use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
-use Nevadskiy\Downloader\Filename\FilenameGenerator;
-use Nevadskiy\Downloader\Filename\Md5FilenameGenerator;
-use Nevadskiy\Downloader\Filename\TempFilenameGenerator;
+use Nevadskiy\Downloader\ExtensionGuesser\ExtensionGuesser;
+use Nevadskiy\Downloader\ExtensionGuesser\SymfonyExtensionGuesser;
+use Nevadskiy\Downloader\FilenameGenerator\FilenameGenerator;
+use Nevadskiy\Downloader\FilenameGenerator\Md5FilenameGenerator;
+use Nevadskiy\Downloader\FilenameGenerator\TempFilenameGenerator;
 use Throwable;
 
 class CurlDownloader
@@ -79,11 +81,11 @@ class CurlDownloader
     protected $curlCallbacks = [];
 
     /**
-     * The MIME types map to file extensions.
+     * The extension guesser instance.
      *
-     * @var array
+     * @var ExtensionGuesser
      */
-    protected $contentTypes = [];
+    protected $extensionGuesser;
 
     /**
      * The temp filename generator.
@@ -104,14 +106,7 @@ class CurlDownloader
      */
     public function __construct()
     {
-        $this->contentTypes = [
-            'image/jpeg' => 'jpg',
-            'image/png' => 'png',
-            'image/gif' => 'gif',
-            'application/pdf' => 'pdf',
-            'text/plain' => 'txt',
-        ];
-
+        $this->extensionGuesser = new SymfonyExtensionGuesser();
         $this->tempFilenameGenerator = new TempFilenameGenerator();
         $this->randomFilenameGenerator = new Md5FilenameGenerator();
     }
@@ -356,7 +351,7 @@ class CurlDownloader
             CURLOPT_HTTPHEADER => $this->buildHeaders(),
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
-            CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$filename, &$contentType) {
+            CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$filename, &$mime) {
                 if (stripos($header, 'Content-Disposition: attachment') !== false) {
                     preg_match('/filename="(.+)"/', $header, $matches);
                     if (isset($matches[1])) {
@@ -365,7 +360,7 @@ class CurlDownloader
                 }
 
                 if (stripos($header, 'Content-Type: ') !== false) {
-                    $contentType = trim(str_ireplace('Content-Type: ', '', $header));
+                    $mime = trim(str_ireplace('Content-Type: ', '', $header));
                 }
 
                 return strlen($header);
@@ -389,7 +384,7 @@ class CurlDownloader
 
             return [
                 'filename' => $filename,
-                'content_type' => $contentType,
+                'mime' => $mime,
                 'url' => curl_getinfo($curl, CURLINFO_EFFECTIVE_URL),
                 'filetime' => curl_getinfo($curl, CURLINFO_FILETIME),
             ];
@@ -443,13 +438,17 @@ class CurlDownloader
     }
 
     /**
-     * Guess a file extension by the content type.
-     *
-     * @todo use specific lib for that.
+     * Guess file extension from response.
      */
-    protected function guessExtension(array $response)
+    protected function guessExtension(array $response): ?string
     {
-        return $this->contentTypes[$response['content_type']] ?? null;
+        $mime = $response['mime'];
+
+        if (! $mime) {
+            return null;
+        }
+
+        return $this->extensionGuesser->getExtension($mime);
     }
 
     /**
@@ -477,17 +476,17 @@ class CurlDownloader
     }
 
     /**
-     * Add content types for extension detector.
+     * Set the extension guesser instance.
      */
-    public function withContentTypes(array $contentTypes): self
+    public function setExtensionGuesser(ExtensionGuesser $guesser): self
     {
-        $this->contentTypes = array_merge($this->contentTypes, $contentTypes);
+        $this->extensionGuesser = $guesser;
 
         return $this;
     }
 
     /**
-     * Set the temp filename generator.
+     * Set the temp filename generator instance.
      */
     public function setTempFilenameGenerator(FilenameGenerator $generator): self
     {
@@ -497,7 +496,7 @@ class CurlDownloader
     }
 
     /**
-     * Set the random filename generator.
+     * Set the random filename generator instance.
      */
     public function setRandomFilenameGenerator(FilenameGenerator $generator): self
     {

@@ -319,7 +319,6 @@ class CurlDownloader implements Downloader
      * @template TValue
      * @param callable(resource $file): TValue $writer
      * @return TValue
-     * @throws Throwable
      */
     protected function newFile(string $path, callable $writer)
     {

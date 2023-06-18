@@ -39,3 +39,8 @@ Thank you for considering contributing. Please see [CONTRIBUTING](CONTRIBUTING.m
 ## 📜 License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
+
+## To Do List
+
+-  [ ] stats with download speed using curl `CURLINFO_SPEED_DOWNLOAD` option
+-  [ ] phpstan

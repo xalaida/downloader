@@ -16,7 +16,7 @@ class DirectoryMissingException extends DownloaderException
      */
     public static function from(string $path): self
     {
-        $e = new static(sprintf('Directory [%s] does not exits.', $path));
+        $e = new static(sprintf('Directory [%s] does not exist.', $path));
         $e->path = $path;
 
         return $e;

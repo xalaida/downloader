@@ -303,7 +303,7 @@ class CurlDownloader
     {
         if ($path === null) {
             throw DestinationFileMissingException::new();
-        } else if (file_exists($path)) {
+        } elseif (file_exists($path)) {
             $this->withHeaders($this->getIfModifiedSinceHeader($path));
         }
     }
@@ -459,15 +459,15 @@ class CurlDownloader
     {
         if (! file_exists($path)) {
             rename($tempPath, $path);
-        } else if ($this->clobbering === self::CLOBBERING_FAIL) {
+        } elseif ($this->clobbering === self::CLOBBERING_FAIL) {
             unlink($tempPath);
 
             throw FileExistsException::from($path);
-        } else if ($this->clobbering === self::CLOBBERING_SKIP) {
+        } elseif ($this->clobbering === self::CLOBBERING_SKIP) {
             unlink($tempPath);
-        } else if ($this->clobbering === self::CLOBBERING_REPLACE) {
+        } elseif ($this->clobbering === self::CLOBBERING_REPLACE) {
             rename($tempPath, $path);
-        } else if ($this->clobbering === self::CLOBBERING_UPDATE) {
+        } elseif ($this->clobbering === self::CLOBBERING_UPDATE) {
             if ($response['filetime'] === -1 || filemtime($path) < $response['filetime']) {
                 rename($tempPath, $path);
             } else {

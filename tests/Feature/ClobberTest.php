@@ -9,7 +9,7 @@ use Nevadskiy\Downloader\Filename\FilenameGenerator;
 use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 
-class ClobberDownloaderTest extends TestCase
+class ClobberTest extends TestCase
 {
     /** @test */
     public function it_throws_exception_when_file_already_exists()

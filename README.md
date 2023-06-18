@@ -44,7 +44,7 @@ The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 
 - [ ] continue downloading partially-downloaded files
 - [ ] sync timestamps with a file on the server
-- [ ] compare timestamps using LastModified header when If-Modified-Since does not supported 
 - [ ] stats with download speed using curl `CURLINFO_SPEED_DOWNLOAD` option
 - [ ] test on windows
+- [ ] test different response codes
 - [ ] phpstan

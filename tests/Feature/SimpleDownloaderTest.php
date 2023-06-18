@@ -2,14 +2,10 @@
 
 namespace Nevadskiy\Downloader\Tests\Feature;
 
-use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 
-/**
- * @todo split into multiple tests.
- */
 class SimpleDownloaderTest extends TestCase
 {
     /** @test */
@@ -113,69 +109,4 @@ class SimpleDownloaderTest extends TestCase
             static::assertDirectoryIsEmpty($this->storage);
         }
     }
-
-    /** @test */
-    public function it_throws_exception_when_destination_directory_is_missing()
-    {
-        try {
-            (new SimpleDownloader())
-                ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
-
-            static::fail(sprintf('Expected [%s] was not thrown.', DirectoryMissingException::class));
-        } catch (DirectoryMissingException $e) {
-            self::assertSame(sprintf('Directory [%s] does not exits.', $this->storage.'/files'), $e->getMessage());
-        }
-    }
-
-    /** @test */
-    public function it_creates_destination_directory_when_it_is_missing()
-    {
-        $destination = (new SimpleDownloader())
-            ->allowDirectoryCreation()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
-
-        static::assertSame($this->storage.'/files/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
-    }
-
-    /** @test */
-    public function it_creates_destination_directory_recursively_when_it_is_missing()
-    {
-        $destination = (new SimpleDownloader())
-            ->allowRecursiveDirectoryCreation()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/hello-world.txt');
-
-        static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
-    }
-
-    /** @test */
-    public function it_downloads_file_to_directory_with_separator_ending()
-    {
-        $destination = (new SimpleDownloader())
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/');
-
-        static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
-    }
-
-    /** @test */
-    public function it_downloads_file_to_directory_with_dot_ending()
-    {
-        $destination = (new SimpleDownloader())
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/.');
-
-        static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
-    }
-
-    // it_can_specify_destination_directory_with_dot_syntax
-
-    // it_downloads_file_according_to_current_working_directory
-
-    // change_working_directory_for_downloader
-
-    // @todo test different response codes.
-
-    // @todo when no content - throw exception + delete temp file.
 }

@@ -6,7 +6,7 @@ use Nevadskiy\Downloader\Filename\FilenameGenerator;
 use Nevadskiy\Downloader\SimpleDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 
-class FilenameDownloaderTest extends TestCase
+class FilenameTest extends TestCase
 {
     /** @test */
     public function it_generates_filename_from_url_when_destination_is_directory()

@@ -39,14 +39,3 @@ Thank you for considering contributing. Please see [CONTRIBUTING](.github/CONTRI
 ## 📜 License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
-
-## 🔨 To Do List
-
-- [ ] specify lowest versions
-- [ ] continue downloading partially-downloaded files
-- [ ] sync timestamps with a file on the server
-- [ ] stats with download speed using curl `CURLINFO_SPEED_DOWNLOAD` option
-- [ ] test on windows
-- [ ] test different response codes
-- [ ] phpstan
-- [ ] increment filename if exists (hello-world.txt => hello-world.txt.1)

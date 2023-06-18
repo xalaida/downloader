@@ -4,6 +4,7 @@ namespace Nevadskiy\Downloader\Tests;
 
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
+use Psr\Log\LoggerInterface;
 
 class DownloaderTest extends TestCase
 {
@@ -123,5 +124,19 @@ class DownloaderTest extends TestCase
             self::assertSame('Could not resolve host: invalid-url', $e->getMessage());
             static::assertDirectoryIsEmpty($this->storage);
         }
+    }
+
+    /**
+     * @test
+     */
+    public function it_is_logger_aware(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $logger->expects(static::once())->method('debug');
+
+        $downloader = new CurlDownloader();
+        $downloader->setLogger($logger);
+        $downloader->download($this->url('/hello-world.txt'), $this->storage.'/hello-world.txt');
     }
 }

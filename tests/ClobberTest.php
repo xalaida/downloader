@@ -112,6 +112,18 @@ class ClobberTest extends TestCase
     /**
      * @test
      */
+    public function it_does_not_include_timestamp_when_file_is_missing(): void
+    {
+        (new CurlDownloader())
+            ->updateIfExists()
+            ->download($this->url('/hello-world.txt'), $destination = $this->storage.'/hello-world.txt');
+
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
+    }
+
+    /**
+     * @test
+     */
     public function it_does_not_update_content_when_file_already_exists_and_has_newer_last_modified_timestamp(): void
     {
         $destination = $this->storage.'/hello-world.txt';

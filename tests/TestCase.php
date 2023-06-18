@@ -21,7 +21,7 @@ class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->storage = $this->prepareDirectory();
+        $this->storage = $this->prepareStorageDirectory();
 
         require_once __DIR__.'/helpers.php';
     }
@@ -29,7 +29,7 @@ class TestCase extends BaseTestCase
     /**
      * Prepare a testing storage directory.
      */
-    protected function prepareDirectory(): string
+    protected function prepareStorageDirectory(): string
     {
         $storage = __DIR__.'/storage';
 

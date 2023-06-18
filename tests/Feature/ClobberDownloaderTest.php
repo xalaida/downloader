@@ -99,7 +99,7 @@ class ClobberDownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_throws_exception_when_destination_is_directory()
+    public function it_throws_exception_if_destination_is_not_filepath_when_including_timestamps()
     {
         file_put_contents($this->storage.'/hello-world.txt', 'Old content!');
 

@@ -1,4 +1,4 @@
-name: Tests
+name: PHPUnit
 
 on: [ push, pull_request ]
 
@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        php: [ '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1' ]
+        php: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2' ]
 
     runs-on: ${{ matrix.os }}
 
@@ -24,22 +24,22 @@ jobs:
           extensions: fileinfo
           coverage: none
 
-      - name: Install dependencies
+      - name: Install Composer dependencies
         run: composer update --no-interaction --no-progress
 
-      - name: Set up Node
+      - name: Set up Node.JS
         uses: actions/setup-node@v1
         with:
           node-version: '16.x'
 
       - name: Start testing server
-        run: node tests/server/index.js &
+        run: node tests/server.js &
 
-      - name: Execute tests
+      - name: Run PHPUnit
         run: vendor/bin/phpunit
 
   coverage:
-    name: Code coverage
+    name: Analyze code coverage
 
     runs-on: ubuntu-latest
 
@@ -50,22 +50,22 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.0
+          php-version: 7.1
           coverage: xdebug
 
-      - name: Install dependencies
+      - name: Install Composer dependencies
         run: composer update --no-interaction --no-progress
 
-      - name: Set up Node
+      - name: Set up Node.JS
         uses: actions/setup-node@v1
         with:
           node-version: '16.x'
 
       - name: Start testing server
-        run: node tests/server/index.js &
+        run: node tests/server.js &
 
-      - name: Execute tests
-        run: vendor/bin/phpunit --coverage-clover=coverage.xml
+      - name: Run PHPUnit with a coverage analysis
+        run: vendor/bin/phpunit --coverage-clover coverage.xml
 
-      - name: Code coverage
-        run: "bash <(curl -s https://codecov.io/bash)"
+      - name: Upload the coverage report
+        uses: codecov/codecov-action@v3

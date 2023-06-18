@@ -1,6 +1,6 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Support;
+namespace Nevadskiy\Downloader\Tests;
 
 use FilesystemIterator;
 
@@ -9,7 +9,7 @@ class TestingDirectory
     /**
      * Clean up the directory or create it if it is missing.
      */
-    public function prepare(string $directory)
+    public function prepare(string $directory): void
     {
         if (is_dir($directory)) {
             $this->clean($directory);
@@ -21,7 +21,7 @@ class TestingDirectory
     /**
      * Clean up the given directory.
      */
-    public function clean(string $directory, bool $preserve = true)
+    public function clean(string $directory, bool $preserve = true): void
     {
         if (! is_dir($directory)) {
             return;

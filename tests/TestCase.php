@@ -3,20 +3,27 @@
 namespace Nevadskiy\Downloader\Tests;
 
 use Nevadskiy\Downloader\Tests\Constraint\DirectoryIsEmpty;
-use Nevadskiy\Downloader\Tests\Support\TestingDirectory;
 use PHPUnit\Framework\TestCase as BaseTestCase;
-use const DIRECTORY_SEPARATOR;
 
 class TestCase extends BaseTestCase
 {
     /**
-     * Get a base URL of the server with fixture files.
+     * The storage dir.
+     *
+     * @var string
      */
-    protected function serverUrl(string $path = '/'): string
-    {
-        $url = $_ENV['TESTING_SERVER_URL'] ?? 'http://127.0.0.1:8888';
+    protected $storage;
 
-        return $url . DIRECTORY_SEPARATOR . ltrim($path, '/');
+    /**
+     * @inheritdoc
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->storage = $this->prepareStorageDirectory();
+
+        require_once __DIR__.'/helpers.php';
     }
 
     /**
@@ -32,9 +39,35 @@ class TestCase extends BaseTestCase
     }
 
     /**
+     * Get a base URL of the server with fixture files.
+     */
+    protected function url(string $path = '/'): string
+    {
+        $url = $_ENV['TESTING_SERVER_URL'] ?? 'http://127.0.0.1:8888';
+
+        return $url.'/'.ltrim($path, '/');
+    }
+
+    /**
+     * Execute the given callback with the specified working directory.
+     */
+    protected function withWorkingDirectory(string $workDir, callable $callback)
+    {
+        $original = getcwd();
+
+        chdir($workDir);
+
+        $result = $callback();
+
+        chdir($original);
+
+        return $result;
+    }
+
+    /**
      * Asserts that a directory is empty.
      */
-    public static function assertDirectoryIsEmpty(string $directory, string $message = '')
+    public static function assertDirectoryIsEmpty(string $directory, string $message = ''): void
     {
         static::assertDirectoryExists($directory);
 

@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: ./
-      dockerfile: ./runtimes/${APP_DOCKER_RUNTIME:-php7.0}/Dockerfile
+      dockerfile: .docker/${PHP_VERSION:-php7.1}/Dockerfile
     environment:
       - TESTING_SERVER_URL=http://server:8888
     volumes:
@@ -20,4 +20,4 @@ services:
       - 8888
     ports:
       - "8888:8888"
-    command: node /app/tests/server/index.js
+    command: node /app/tests/server.js

@@ -2,9 +2,7 @@
 
 namespace Nevadskiy\Downloader\Exceptions;
 
-use Exception;
-
-class DirectoryMissingException extends Exception
+class DirectoryMissingException extends DownloaderException
 {
     /**
      * A path of the missing directory.
@@ -14,13 +12,14 @@ class DirectoryMissingException extends Exception
     protected $path;
 
     /**
-     * Make a new exception instance.
+     * Make a new exception instance from the given path.
      */
-    public function __construct(string $path)
+    public static function from(string $path): self
     {
-        $this->path = $path;
+        $e = new static(sprintf('Directory [%s] does not exist.', $path));
+        $e->path = $path;
 
-        parent::__construct(sprintf('Directory "%s" does not exist', $path));
+        return $e;
     }
 
     /**

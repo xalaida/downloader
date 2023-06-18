@@ -2,7 +2,6 @@
 
 namespace Nevadskiy\Downloader\Exceptions;
 
-class ResponseNotModifiedException extends NetworkException
+class ResponseNotModifiedException extends DownloaderException
 {
-
 }

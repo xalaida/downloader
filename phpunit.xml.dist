@@ -3,13 +3,15 @@
     bootstrap="vendor/autoload.php"
     backupGlobals="false"
     backupStaticAttributes="false"
+    cacheResultFile=".cache/.phpunit.result.cache"
     colors="true"
     verbose="true"
     convertErrorsToExceptions="true"
     convertNoticesToExceptions="true"
     convertWarningsToExceptions="true"
     processIsolation="false"
-    stopOnFailure="false"
+    stopOnFailure="true"
+    stopOnError="true"
 >
     <testsuites>
         <testsuite name="Package Test Suite">

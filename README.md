@@ -39,3 +39,7 @@ Thank you for considering contributing. Please see [CONTRIBUTING](.github/CONTRI
 ## 📜 License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
+
+## 🔨 To Do List
+
+- [ ] windows support

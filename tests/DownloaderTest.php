@@ -1,10 +1,9 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Feature;
+namespace Nevadskiy\Downloader\Tests;
 
-use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\Tests\TestCase;
+use Nevadskiy\Downloader\Exceptions\DownloaderException;
 
 class DownloaderTest extends TestCase
 {
@@ -12,7 +11,7 @@ class DownloaderTest extends TestCase
     public function it_downloads_response_by_url()
     {
         (new CurlDownloader())
-            ->download($this->serverUrl(), $destination = $this->storage.'/home.txt');
+            ->download($this->url(), $destination = $this->storage.'/home.txt');
 
         static::assertSame($this->storage.'/home.txt', $destination);
         static::assertStringEqualsFile($destination, 'Welcome home!');
@@ -22,10 +21,10 @@ class DownloaderTest extends TestCase
     public function it_downloads_file_by_url()
     {
         (new CurlDownloader())
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination = $this->storage.'/hello-world.txt');
+            ->download($this->url('/hello-world.txt'), $destination = $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -33,25 +32,25 @@ class DownloaderTest extends TestCase
     {
         $downloader = new CurlDownloader();
 
-        $downloader->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/hello-world.txt');
-        $downloader->download($this->serverUrl('/fixtures/hello-php.txt'), $this->storage.'/hello-php.txt');
+        $downloader->download($this->url('/hello-world.txt'), $this->storage.'/hello-world.txt');
+        $downloader->download($this->url('/hello-php.txt'), $this->storage.'/hello-php.txt');
 
         static::assertFileExists($this->storage.'/hello-world.txt');
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $this->storage.'/hello-world.txt');
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $this->storage.'/hello-world.txt');
 
         static::assertFileExists($this->storage.'/hello-php.txt');
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-php.txt', $this->storage.'/hello-php.txt');
+        static::assertFileEquals(__DIR__.'/fixtures/hello-php.txt', $this->storage.'/hello-php.txt');
     }
 
     /** @test */
     public function it_downloads_file_with_following_redirects()
     {
         $path = (new CurlDownloader())
-            ->download($this->serverUrl('/redirect/hello-world.txt'), $this->storage.'/hello-world-redirect.txt');
+            ->download($this->url('/redirect/hello-world.txt'), $this->storage.'/hello-world-redirect.txt');
 
         static::assertSame($this->storage.'/hello-world-redirect.txt', $path);
         static::assertFileExists($path);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $path);
     }
 
     /** @test */
@@ -61,10 +60,10 @@ class DownloaderTest extends TestCase
             ->withHeaders([
                 sprintf('Authorization: Basic %s', base64_encode('client:secret')),
             ])
-            ->download($this->serverUrl('/private/hello-world.txt'), $this->storage.'/hello-world.txt');
+            ->download($this->url('/private/hello-world.txt'), $this->storage.'/hello-world.txt');
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -76,12 +75,12 @@ class DownloaderTest extends TestCase
             ->withProgress(function (int $download, int $downloaded, int $upload, int $uploaded) use (&$bytes) {
                 $bytes = $downloaded;
             })
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/hello-world.txt');
+            ->download($this->url('/hello-world.txt'), $this->storage.'/hello-world.txt');
 
         static::assertSame(13, $bytes);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -89,7 +88,7 @@ class DownloaderTest extends TestCase
     {
         try {
             (new CurlDownloader())
-                ->download($this->serverUrl('/fixtures/wrong-file.txt'), $this->storage.'/missing-file.txt');
+                ->download($this->url('/wrong-file.txt'), $this->storage.'/missing-file.txt');
 
             static::fail(sprintf('Expected [%s] was not thrown.', DownloaderException::class));
         } catch (DownloaderException $e) {

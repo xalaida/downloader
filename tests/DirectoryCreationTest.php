@@ -1,10 +1,9 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Feature;
+namespace Nevadskiy\Downloader\Tests;
 
-use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\Tests\TestCase;
+use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 
 class DirectoryCreationTest extends TestCase
 {
@@ -13,7 +12,7 @@ class DirectoryCreationTest extends TestCase
     {
         try {
             (new CurlDownloader())
-                ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
+                ->download($this->url('/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
             static::fail(sprintf('Expected [%s] was not thrown.', DirectoryMissingException::class));
         } catch (DirectoryMissingException $e) {
@@ -26,10 +25,10 @@ class DirectoryCreationTest extends TestCase
     {
         $destination = (new CurlDownloader())
             ->allowDirectoryCreation()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
+            ->download($this->url('/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
         static::assertSame($this->storage.'/files/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -37,10 +36,10 @@ class DirectoryCreationTest extends TestCase
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/hello-world.txt');
+            ->download($this->url('/hello-world.txt'), $this->storage.'/files/2022/07/26/hello-world.txt');
 
         static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -48,10 +47,10 @@ class DirectoryCreationTest extends TestCase
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26');
+            ->download($this->url('/hello-world.txt'), $this->storage.'/files/2022/07/26');
 
         static::assertSame($this->storage.'/files/2022/07/26', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -59,10 +58,10 @@ class DirectoryCreationTest extends TestCase
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/');
+            ->download($this->url('/hello-world.txt'), $this->storage.'/files/2022/07/26/');
 
         static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -70,10 +69,10 @@ class DirectoryCreationTest extends TestCase
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/.');
+            ->download($this->url('/hello-world.txt'), $this->storage.'/files/2022/07/26/.');
 
         static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -81,9 +80,9 @@ class DirectoryCreationTest extends TestCase
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26.');
+            ->download($this->url('/hello-world.txt'), $this->storage.'/files/2022/07/26.');
 
         static::assertSame($this->storage.'/files/2022/07/26.', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 }

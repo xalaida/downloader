@@ -1,6 +1,6 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Support;
+namespace Nevadskiy\Downloader\Tests;
 
 use FilesystemIterator;
 

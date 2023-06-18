@@ -1,10 +1,9 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Feature;
+namespace Nevadskiy\Downloader\Tests;
 
-use Nevadskiy\Downloader\Filename\FilenameGenerator;
 use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\Tests\TestCase;
+use Nevadskiy\Downloader\Filename\FilenameGenerator;
 
 class FilenameTest extends TestCase
 {
@@ -12,44 +11,44 @@ class FilenameTest extends TestCase
     public function it_generates_filename_from_url_when_destination_is_directory()
     {
         $path = (new CurlDownloader())
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
+            ->download($this->url('/hello-world.txt'), $this->storage);
 
         static::assertSame($path, $this->storage.'/hello-world.txt');
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $path);
     }
 
     /** @test */
     public function it_generates_filename_from_url_after_redirects()
     {
         $path = (new CurlDownloader())
-            ->download($this->serverUrl('/redirect'), $this->storage);
+            ->download($this->url('/redirect'), $this->storage);
 
         static::assertSame($path, $this->storage.'/hello-world.txt');
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $path);
     }
 
     /** @test */
     public function it_generates_filename_from_url_and_mime_type_when_destination_is_directory()
     {
         $path = (new CurlDownloader())
-            ->download($this->serverUrl('/hello-world'), $this->storage);
+            ->download($this->url('/hello-world'), $this->storage);
 
         static::assertSame($path, $this->storage.'/hello-world.txt');
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $path);
     }
 
     /** @test */
     public function it_generates_filename_from_content_disposition_header_when_destination_is_directory()
     {
         $path = (new CurlDownloader())
-            ->download($this->serverUrl('/content'), $this->storage);
+            ->download($this->url('/content'), $this->storage);
 
         static::assertSame($path, $this->storage.'/hello-world.txt');
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $path);
     }
 
     /** @test */
-    public function it_generates_random_filename_when_destination_is_directory()
+    public function it_generates_random_filename_when_no_content_type_and_destination_is_directory()
     {
         $filenameGenerator = $this->createMock(FilenameGenerator::class);
 
@@ -59,7 +58,7 @@ class FilenameTest extends TestCase
 
         $path = (new CurlDownloader())
             ->setRandomFilenameGenerator($filenameGenerator)
-            ->download($this->serverUrl(), $this->storage);
+            ->download($this->url(), $this->storage);
 
         static::assertEquals($this->storage.'/RANDOMFILE', $path);
         static::assertStringEqualsFile($path, 'Welcome home!');

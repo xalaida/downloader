@@ -3,7 +3,7 @@ var http = require('http');
 var path = require('path');
 
 http.createServer(function (req, res) {
-    console.log(`Ping at "${req.url}" with headers [${JSON.stringify(req.headers)}]`)
+    console.log(`Ping at "${req.url}" with headers [${JSON.stringify(req.headers)}]`);
 
     if (req.url === '/') {
         res.write('Welcome home!');
@@ -33,35 +33,15 @@ http.createServer(function (req, res) {
         res.writeHead(301, { 'Location': req.url.replace('/redirect', '/redirect/hello-world.txt') });
         res.end();
     } else if (req.url.startsWith('/redirect')) {
-        res.writeHead(301, { 'Location': req.url.replace('/redirect', '/fixtures') });
+        const location = req.url.replace('/redirect', '');
+
+        console.log('Redirect to location: ' + location)
+
+        res.writeHead(301, { 'Location': location });
         res.end();
-    } else if (req.url.startsWith('/fixtures')) {
-        fs.readFile(__dirname + req.url, function (err, data) {
-            if (err) {
-                res.writeHead(404);
-                res.end(JSON.stringify(err));
-                return;
-            }
-
-            fs.stat(__dirname + req.url, function (err, stats) {
-                const lastModifiedAt = new Date(stats.mtime)
-                lastModifiedAt.setMilliseconds(0);
-
-                if (! req.headers['if-modified-since']) {
-                    res.writeHead(200, { 'Last-Modified': lastModifiedAt.toUTCString() });
-                    res.end(data);
-                } else if (lastModifiedAt.getTime() > (new Date(req.headers['if-modified-since']).getTime())) {
-                    res.writeHead(200, { 'Last-Modified': lastModifiedAt.toUTCString() });
-                    res.end(data);
-                } else {
-                    res.writeHead(304);
-                    res.end();
-                }
-            })
-        });
     } else if (req.url.startsWith('/private')) {
         if (req.headers.authorization === `Basic ${btoa('client:secret')}`) {
-            res.writeHead(301, { 'Location': req.url.replace('/private', '/fixtures') });
+            res.writeHead(301, { 'Location': req.url.replace('/private', '') });
             res.end();
         } else {
             res.writeHead(403);
@@ -83,7 +63,33 @@ http.createServer(function (req, res) {
             res.end(data);
         });
     } else {
-        res.writeHead(404);
-        res.end();
+        const filename = req.url;
+        const filePath = path.join(__dirname, 'fixtures', filename);
+
+        console.log('File path: ' + filePath);
+
+        fs.readFile(filePath, function (err, data) {
+            if (err) {
+                res.writeHead(404);
+                res.end(JSON.stringify(err));
+                return;
+            }
+
+            fs.stat(filePath, function (err, stats) {
+                const lastModifiedAt = new Date(stats.mtime)
+                lastModifiedAt.setMilliseconds(0);
+
+                if (! req.headers['if-modified-since']) {
+                    res.writeHead(200, { 'Last-Modified': lastModifiedAt.toUTCString() });
+                    res.end(data);
+                } else if (lastModifiedAt.getTime() > (new Date(req.headers['if-modified-since']).getTime())) {
+                    res.writeHead(200, { 'Last-Modified': lastModifiedAt.toUTCString() });
+                    res.end(data);
+                } else {
+                    res.writeHead(304);
+                    res.end();
+                }
+            })
+        });
     }
 }).listen(8888);

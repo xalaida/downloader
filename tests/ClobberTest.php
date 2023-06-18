@@ -1,13 +1,12 @@
 <?php
 
-namespace Nevadskiy\Downloader\Tests\Feature;
+namespace Nevadskiy\Downloader\Tests;
 
 use DateTime;
+use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DestinationFileMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Filename\FilenameGenerator;
-use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\Tests\TestCase;
 
 class ClobberTest extends TestCase
 {
@@ -27,7 +26,7 @@ class ClobberTest extends TestCase
         try {
             (new CurlDownloader())
                 ->setTempFilenameGenerator($tempGenerator)
-                ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+                ->download($this->url('/hello-world.txt'), $destination);
 
             static::fail(sprintf('Expected [%s] was not thrown.', FileExistsException::class));
         } catch (FileExistsException $e) {
@@ -45,7 +44,7 @@ class ClobberTest extends TestCase
 
         $destination = (new CurlDownloader())
             ->skipIfExists()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+            ->download($this->url('/hello-world.txt'), $destination);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
         static::assertStringEqualsFile($destination, 'Old content!');
@@ -60,10 +59,10 @@ class ClobberTest extends TestCase
 
         (new CurlDownloader())
             ->replaceIfExists()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+            ->download($this->url('/hello-world.txt'), $destination);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -77,10 +76,10 @@ class ClobberTest extends TestCase
 
         (new CurlDownloader())
             ->updateIfExists()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+            ->download($this->url('/hello-world.txt'), $destination);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
-        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -92,7 +91,7 @@ class ClobberTest extends TestCase
 
         $destination = (new CurlDownloader())
             ->updateIfExists()
-            ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
+            ->download($this->url('/hello-world.txt'), $destination);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
         static::assertStringEqualsFile($destination, 'Old content!');
@@ -107,7 +106,7 @@ class ClobberTest extends TestCase
 
         $destination = (new CurlDownloader())
             ->updateIfExists()
-            ->download($this->serverUrl('/hello-world'), $destination);
+            ->download($this->url('/hello-world'), $destination);
 
         static::assertSame($this->storage.'/hello-world.txt', $destination);
         static::assertStringEqualsFile($destination, 'Old content!');
@@ -121,7 +120,7 @@ class ClobberTest extends TestCase
         try {
             (new CurlDownloader())
                 ->updateIfExists()
-                ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
+                ->download($this->url('/hello-world.txt'), $this->storage);
 
             static::fail(sprintf('Expected [%s] was not thrown.', DestinationFileMissingException::class));
         } catch (DestinationFileMissingException $e) {

@@ -20,4 +20,4 @@ services:
       - 8888
     ports:
       - "8888:8888"
-    command: node /app/tests/server/index.js
+    command: node /app/tests/server.js

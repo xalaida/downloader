@@ -177,7 +177,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
     /**
      * Add a cURL option with the given value.
      *
-     * @see: https://www.php.net/manual/en/function.curl-setopt.php
+     * @see https://www.php.net/manual/en/function.curl-setopt.php
      */
     public function withCurlOption($option, $value): self
     {
@@ -226,8 +226,8 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
     {
         $this->withCurlOption(CURLOPT_NOPROGRESS, false);
 
-        $this->withCurlOption(CURLOPT_PROGRESSFUNCTION, function ($ch, int $total, int $loaded) use ($callback) {
-            $callback($total, $loaded);
+        $this->withCurlOption(CURLOPT_PROGRESSFUNCTION, function ($ch, int $download, int $downloaded, int $upload, int $uploaded) use ($callback) {
+            $callback($download, $downloaded, $upload, $uploaded);
         });
 
         return $this;

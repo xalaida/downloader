@@ -48,7 +48,7 @@ class SimpleDownloaderTest extends TestCase
     }
 
     /** @test */
-    public function it_downloads_files_with_following_redirects()
+    public function it_downloads_file_with_following_redirects()
     {
         $path = (new SimpleDownloader())
             ->download($this->serverUrl('/redirect/hello-world.txt'), $this->storage.'/hello-world-redirect.txt');
@@ -56,6 +56,36 @@ class SimpleDownloaderTest extends TestCase
         static::assertSame($this->storage.'/hello-world-redirect.txt', $path);
         static::assertFileExists($path);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $path);
+    }
+
+    /** @test */
+    public function it_downloads_file_using_authorization_header()
+    {
+        $destination = (new SimpleDownloader())
+            ->withHeaders([
+                sprintf('Authorization: Basic %s', base64_encode('client:secret')),
+            ])
+            ->download($this->serverUrl('/private/hello-world.txt'), $this->storage.'/hello-world.txt');
+
+        static::assertSame($this->storage.'/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_downloads_file_with_progress()
+    {
+        $bytes = 0;
+
+        $destination = (new SimpleDownloader())
+            ->withProgress(function (int $download, int $downloaded, int $upload, int $uploaded) use (&$bytes) {
+                $bytes = $downloaded;
+            })
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/hello-world.txt');
+
+        static::assertSame(13, $bytes);
+
+        static::assertSame($this->storage.'/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 
     /** @test */
@@ -109,5 +139,7 @@ class SimpleDownloaderTest extends TestCase
 
     // change_working_directory_for_downloader
 
-    // @todo when no content - throw exception + delete temp file
+    // @todo test different response codes.
+
+    // @todo when no content - throw exception + delete temp file.
 }

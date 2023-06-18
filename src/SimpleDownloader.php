@@ -144,6 +144,20 @@ class SimpleDownloader
     }
 
     /**
+     * Specify the progress callback.
+     */
+    public function withProgress(callable $callback): self
+    {
+        $this->withCurlOption(CURLOPT_NOPROGRESS, false);
+
+        $this->withCurlOption(CURLOPT_PROGRESSFUNCTION, function ($ch, int $download, int $downloaded, int $upload, int $uploaded) use ($callback) {
+            $callback($download, $downloaded, $upload, $uploaded);
+        });
+
+        return $this;
+    }
+
+    /**
      * Register the callback for a cURL session.
      *
      * @see https://www.php.net/manual/en/function.curl-setopt.php
@@ -153,6 +167,18 @@ class SimpleDownloader
         $this->curlCallbacks[] = $callback;
 
         return $this;
+    }
+
+    /**
+     * Specify a cURL option with the given value.
+     *
+     * @see https://www.php.net/manual/en/function.curl-setopt.php
+     */
+    public function withCurlOption($option, $value): self
+    {
+        return $this->withCurl(function ($curl) use ($option, $value) {
+            curl_setopt($curl, $option, $value);
+        });
     }
 
     /**

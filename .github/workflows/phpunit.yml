@@ -24,7 +24,12 @@ jobs:
           node-version: '16.x'
 
       - name: Start testing server
-        run: node tests/server.js &
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+           node tests/server.js &
+          else
+           node tests/server.js
+          fi
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2

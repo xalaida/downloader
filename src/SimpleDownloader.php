@@ -4,6 +4,7 @@ namespace Nevadskiy\Downloader;
 
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
+use Nevadskiy\Downloader\Exceptions\NotModifiedResponseException;
 use Nevadskiy\Downloader\Filename\FilenameGenerator;
 use Nevadskiy\Downloader\Filename\Md5FilenameGenerator;
 use Nevadskiy\Downloader\Filename\TempFilenameGenerator;
@@ -32,11 +33,21 @@ class SimpleDownloader
     const CLOBBERING_REPLACE = 2;
 
     /**
+     * Update contents if file exists and is older than downloading one.
+     */
+    const CLOBBERING_UPDATE = 3;
+
+    /**
      * Indicates how the downloader should handle a file that already exists.
      *
      * @var int
      */
     protected $clobbering = self::CLOBBERING_FAIL;
+
+    /**
+     * The header list to be included in the cURL request.
+     */
+    protected $headers = [];
 
     /**
      * The cURL callbacks.
@@ -114,6 +125,26 @@ class SimpleDownloader
     }
 
     /**
+     * Update contents if the existing file is older than downloading one.
+     */
+    public function updateIfExists(): self
+    {
+        $this->clobbering = self::CLOBBERING_UPDATE;
+
+        return $this;
+    }
+
+    /**
+     * Include the given headers to the cURL request.
+     */
+    public function withHeaders(array $headers): self
+    {
+        $this->headers = array_merge($this->headers, $headers);
+
+        return $this;
+    }
+
+    /**
      * Register the callback for a cURL session.
      *
      * @see https://www.php.net/manual/en/function.curl-setopt.php
@@ -136,9 +167,18 @@ class SimpleDownloader
 
         $tempPath = $dir . DIRECTORY_SEPARATOR . $this->tempFilenameGenerator->generate();
 
-        $response = $this->newFile($tempPath, function ($file) use ($url) {
-            return $this->write($url, $file);
-        });
+        // @todo another option (not clobbering) maybe withTimestamps()
+        if ($this->clobbering === self::CLOBBERING_UPDATE && $path && file_exists($path)) {
+            $this->withHeaders($this->getIfModifiedSinceHeader($path));
+        }
+
+        try {
+            $response = $this->newFile($tempPath, function ($file) use ($url) {
+                return $this->write($url, $file);
+            });
+        } catch (NotModifiedResponseException $e) {
+            return $path;
+        }
 
         $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($response);
 
@@ -165,6 +205,14 @@ class SimpleDownloader
         }
 
         return [$dir, $path];
+    }
+
+    /**
+     * Get the "If-Modified-Since" header for the given file path.
+     */
+    protected function getIfModifiedSinceHeader(string $path): array
+    {
+        return ['If-Modified-Since' => gmdate('D, d M Y H:i:s T', filemtime($path))];
     }
 
     /**
@@ -202,6 +250,7 @@ class SimpleDownloader
             CURLOPT_URL => $url,
             CURLOPT_FILE => $file,
             CURLOPT_FAILONERROR => true,
+            CURLOPT_HTTPHEADER => $this->buildHeaders(),
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
             CURLOPT_HEADERFUNCTION => function ($curl, $header) use (&$filename, &$contentType) {
@@ -231,6 +280,12 @@ class SimpleDownloader
                 throw new DownloaderException(curl_error($curl));
             }
 
+            $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+            if ($status === 304) {
+                throw new NotModifiedResponseException();
+            }
+
             $url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
 
             return [
@@ -241,6 +296,24 @@ class SimpleDownloader
         } finally {
             curl_close($curl);
         }
+    }
+
+    /**
+     * Build headers for the cURL request.
+     */
+    protected function buildHeaders(): array
+    {
+        $headers = [];
+
+        foreach ($this->headers as $key => $value) {
+            if (! is_int($key)) {
+                $headers[] = "{$key}: {$value}";
+            } else {
+                $headers[] = $value;
+            }
+        }
+
+        return $headers;
     }
 
     /**
@@ -293,6 +366,8 @@ class SimpleDownloader
         } else if ($this->clobbering === self::CLOBBERING_SKIP) {
             unlink($tempPath);
         } else if ($this->clobbering === self::CLOBBERING_REPLACE) {
+            rename($tempPath, $path);
+        } else if ($this->clobbering === self::CLOBBERING_UPDATE) {
             rename($tempPath, $path);
         }
     }

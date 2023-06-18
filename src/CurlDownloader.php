@@ -4,7 +4,7 @@ namespace Nevadskiy\Downloader;
 
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
-use Nevadskiy\Downloader\Exceptions\ResponseNotModifiedException;
+use Nevadskiy\Downloader\Exceptions\NotModifiedResponseException;
 use Nevadskiy\Downloader\Exceptions\DownloaderException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -339,7 +339,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
                 'url' => $url,
                 'path' => $path
             ]);
-        } catch (ResponseNotModifiedException $e) {
+        } catch (NotModifiedResponseException $e) {
             $this->logger->notice('Remote file "{url}" has not been modified since the last time it was accessed', [
                 'file' => $path,
                 'url' => $url,
@@ -457,7 +457,7 @@ class CurlDownloader implements Downloader, LoggerAwareInterface
             }
 
             if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 304) {
-                throw new ResponseNotModifiedException();
+                throw new NotModifiedResponseException();
             }
         } finally {
             curl_close($ch);

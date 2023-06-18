@@ -10,8 +10,10 @@ use Nevadskiy\Downloader\Filename\FilenameGenerator;
 
 class ClobberTest extends TestCase
 {
-    /** @test */
-    public function it_throws_exception_when_file_already_exists()
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_file_already_exists(): void
     {
         $destination = $this->storage.'/hello-world.txt';
 
@@ -35,8 +37,10 @@ class ClobberTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_skips_dowloading_when_file_already_exists()
+    /**
+     * @test
+     */
+    public function it_skips_downloading_when_file_already_exists(): void
     {
         $destination = $this->storage.'/hello-world.txt';
 
@@ -50,8 +54,10 @@ class ClobberTest extends TestCase
         static::assertStringEqualsFile($destination, 'Old content!');
     }
 
-    /** @test */
-    public function it_replace_content_of_existing_file()
+    /**
+     * @test
+     */
+    public function it_replace_content_of_existing_file(): void
     {
         $destination = $this->storage.'/hello-world.txt';
 
@@ -65,8 +71,10 @@ class ClobberTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_updates_old_content_of_existing_file()
+    /**
+     * @test
+     */
+    public function it_updates_old_content_of_existing_file(): void
     {
         $destination = $this->storage.'/hello-world.txt';
 
@@ -82,8 +90,10 @@ class ClobberTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_does_not_update_old_content_when_file_already_exists_and_was_not_modified_since()
+    /**
+     * @test
+     */
+    public function it_does_not_update_old_content_when_file_already_exists_and_was_not_modified_since(): void
     {
         $destination = $this->storage.'/hello-world.txt';
 
@@ -97,8 +107,10 @@ class ClobberTest extends TestCase
         static::assertStringEqualsFile($destination, 'Old content!');
     }
 
-    /** @test */
-    public function it_does_not_update_old_content_when_file_already_exists_and_has_newer_last_modified_timestamp()
+    /**
+     * @test
+     */
+    public function it_does_not_update_old_content_when_file_already_exists_and_has_newer_last_modified_timestamp(): void
     {
         $destination = $this->storage.'/hello-world.txt';
 
@@ -112,8 +124,10 @@ class ClobberTest extends TestCase
         static::assertStringEqualsFile($destination, 'Old content!');
     }
 
-    /** @test */
-    public function it_throws_exception_if_destination_is_not_filepath_when_including_timestamps()
+    /**
+     * @test
+     */
+    public function it_throws_exception_if_destination_is_not_filepath_when_including_timestamps(): void
     {
         file_put_contents($this->storage.'/hello-world.txt', 'Old content!');
 

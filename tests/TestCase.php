@@ -17,7 +17,7 @@ class TestCase extends BaseTestCase
     /**
      * @inheritdoc
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -51,7 +51,7 @@ class TestCase extends BaseTestCase
     /**
      * Asserts that a directory is empty.
      */
-    public static function assertDirectoryIsEmpty(string $directory, string $message = '')
+    public static function assertDirectoryIsEmpty(string $directory, string $message = ''): void
     {
         static::assertDirectoryExists($directory);
 

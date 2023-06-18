@@ -7,8 +7,10 @@ use Nevadskiy\Downloader\Exceptions\DownloaderException;
 
 class DownloaderTest extends TestCase
 {
-    /** @test */
-    public function it_downloads_response_by_url()
+    /**
+     * @test
+     */
+    public function it_downloads_response_by_url(): void
     {
         (new CurlDownloader())
             ->download($this->url(), $destination = $this->storage.'/home.txt');
@@ -17,8 +19,10 @@ class DownloaderTest extends TestCase
         static::assertStringEqualsFile($destination, 'Welcome home!');
     }
 
-    /** @test */
-    public function it_downloads_file_by_url()
+    /**
+     * @test
+     */
+    public function it_downloads_file_by_url(): void
     {
         (new CurlDownloader())
             ->download($this->url('/hello-world.txt'), $destination = $this->storage.'/hello-world.txt');
@@ -27,8 +31,10 @@ class DownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_downloads_multiple_files()
+    /**
+     * @test
+     */
+    public function it_downloads_multiple_files(): void
     {
         $downloader = new CurlDownloader();
 
@@ -42,8 +48,10 @@ class DownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-php.txt', $this->storage.'/hello-php.txt');
     }
 
-    /** @test */
-    public function it_downloads_file_with_following_redirects()
+    /**
+     * @test
+     */
+    public function it_downloads_file_with_following_redirects(): void
     {
         $path = (new CurlDownloader())
             ->download($this->url('/redirect/hello-world.txt'), $this->storage.'/hello-world-redirect.txt');
@@ -53,8 +61,10 @@ class DownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $path);
     }
 
-    /** @test */
-    public function it_downloads_file_using_authorization_header()
+    /**
+     * @test
+     */
+    public function it_downloads_file_using_authorization_header(): void
     {
         $destination = (new CurlDownloader())
             ->withHeaders([
@@ -66,8 +76,10 @@ class DownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_downloads_file_with_progress()
+    /**
+     * @test
+     */
+    public function it_downloads_file_with_progress(): void
     {
         $bytes = 0;
 
@@ -83,8 +95,10 @@ class DownloaderTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_throws_exception_when_http_error_occurs()
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_http_error_occurs(): void
     {
         try {
             (new CurlDownloader())
@@ -96,8 +110,10 @@ class DownloaderTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_throws_exception_when_invalid_url()
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_invalid_url(): void
     {
         try {
             (new CurlDownloader())->download('invalid-url', $this->storage.'/invalid-url.txt');

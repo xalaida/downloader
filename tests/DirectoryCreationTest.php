@@ -7,8 +7,10 @@ use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
 
 class DirectoryCreationTest extends TestCase
 {
-    /** @test */
-    public function it_throws_exception_when_destination_directory_is_missing()
+    /**
+     * @test
+     */
+    public function it_throws_exception_when_destination_directory_is_missing(): void
     {
         try {
             (new CurlDownloader())
@@ -20,8 +22,10 @@ class DirectoryCreationTest extends TestCase
         }
     }
 
-    /** @test */
-    public function it_creates_destination_directory_when_it_is_missing()
+    /**
+     * @test
+     */
+    public function it_creates_destination_directory_when_it_is_missing(): void
     {
         $destination = (new CurlDownloader())
             ->allowDirectoryCreation()
@@ -31,8 +35,10 @@ class DirectoryCreationTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_creates_destination_directory_recursively_when_it_is_missing()
+    /**
+     * @test
+     */
+    public function it_creates_destination_directory_recursively_when_it_is_missing(): void
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
@@ -42,8 +48,10 @@ class DirectoryCreationTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_assumes_last_path_segment_is_filename_when_destination_is_missing_directory()
+    /**
+     * @test
+     */
+    public function it_assumes_last_path_segment_is_filename_when_destination_is_missing_directory(): void
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
@@ -53,8 +61,10 @@ class DirectoryCreationTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_assumes_last_path_segment_is_directory_when_destination_ends_with_separator()
+    /**
+     * @test
+     */
+    public function it_assumes_last_path_segment_is_directory_when_destination_ends_with_separator(): void
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
@@ -64,8 +74,10 @@ class DirectoryCreationTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_assumes_last_path_segment_is_directory_when_destination_ends_with_separator_dot()
+    /**
+     * @test
+     */
+    public function it_assumes_last_path_segment_is_directory_when_destination_ends_with_separator_dot(): void
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
@@ -75,8 +87,10 @@ class DirectoryCreationTest extends TestCase
         static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $destination);
     }
 
-    /** @test */
-    public function it_assumes_last_path_segment_is_filename_when_destination_ends_with_dot()
+    /**
+     * @test
+     */
+    public function it_assumes_last_path_segment_is_filename_when_destination_ends_with_dot(): void
     {
         $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()

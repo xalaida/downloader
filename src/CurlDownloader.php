@@ -17,26 +17,26 @@ class CurlDownloader
     /**
      * Throw an exception if the file already exists.
      */
-    const CLOBBERING_FAIL = 0;
+    public const CLOBBERING_FAIL = 0;
 
     /**
      * Skip downloading if the file already exists.
      */
-    const CLOBBERING_SKIP = 1;
+    public const CLOBBERING_SKIP = 1;
     /**
      * Replace contents if file already exists.
      */
-    const CLOBBERING_REPLACE = 2;
+    public const CLOBBERING_REPLACE = 2;
 
     /**
      * Update contents if file exists and is older than downloading one.
      */
-    const CLOBBERING_UPDATE = 3;
+    public const CLOBBERING_UPDATE = 3;
 
     /**
      * Default permissions for created destination directory.
      */
-    const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
+    public const DEFAULT_DIRECTORY_PERMISSIONS = 0755;
 
     /**
      * Indicates how the downloader should handle a file that already exists.
@@ -231,7 +231,7 @@ class CurlDownloader
      */
     public function download(string $url, string $destination): string
     {
-        list($directory, $path) = $this->parseDestination($destination);
+        [$directory, $path] = $this->parseDestination($destination);
 
         if ($this->clobbering === self::CLOBBERING_UPDATE) {
             $this->includeTimestamps($path);
@@ -285,7 +285,7 @@ class CurlDownloader
     /**
      * Make a destination directory if it is missing.
      */
-    protected function makeDirectoryIfMissing(string $directory)
+    protected function makeDirectoryIfMissing(string $directory): void
     {
         if (is_dir($directory)) {
             return;
@@ -299,7 +299,7 @@ class CurlDownloader
     /**
      * Use the file timestamps in the cURL request.
      */
-    protected function includeTimestamps(string $path = null)
+    protected function includeTimestamps(string $path = null): void
     {
         if ($path === null) {
             throw DestinationFileMissingException::new();
@@ -322,6 +322,7 @@ class CurlDownloader
      * @template TValue
      * @param callable(resource $file): TValue $writer
      * @return TValue
+     * @throws Throwable
      */
     protected function newFile(string $path, callable $writer)
     {
@@ -454,7 +455,7 @@ class CurlDownloader
     /**
      * Save a temp file to the given path.
      */
-    protected function saveAs(string $tempPath, string $path, array $response)
+    protected function saveAs(string $tempPath, string $path, array $response): void
     {
         if (! file_exists($path)) {
             rename($tempPath, $path);

@@ -48,3 +48,4 @@ The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 - [ ] test on windows
 - [ ] test different response codes
 - [ ] phpstan
+- [ ] increment filename if exists (hello-world.txt => hello-world.txt.1)

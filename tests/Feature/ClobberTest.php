@@ -6,7 +6,7 @@ use DateTime;
 use Nevadskiy\Downloader\Exceptions\DestinationFileMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
 use Nevadskiy\Downloader\Filename\FilenameGenerator;
-use Nevadskiy\Downloader\SimpleDownloader;
+use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 
 class ClobberTest extends TestCase
@@ -25,7 +25,7 @@ class ClobberTest extends TestCase
             ->willReturn('TEMPFILE');
 
         try {
-            (new SimpleDownloader())
+            (new CurlDownloader())
                 ->setTempFilenameGenerator($tempGenerator)
                 ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
@@ -43,7 +43,7 @@ class ClobberTest extends TestCase
 
         file_put_contents($destination, 'Old content!');
 
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->skipIfExists()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
@@ -58,7 +58,7 @@ class ClobberTest extends TestCase
 
         file_put_contents($destination, 'Old content!');
 
-        (new SimpleDownloader())
+        (new CurlDownloader())
             ->replaceIfExists()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
@@ -75,7 +75,7 @@ class ClobberTest extends TestCase
 
         touch($destination, DateTime::createFromFormat('m/d/Y', '1/10/2014')->getTimestamp());
 
-        (new SimpleDownloader())
+        (new CurlDownloader())
             ->updateIfExists()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
@@ -90,7 +90,7 @@ class ClobberTest extends TestCase
 
         file_put_contents($destination, 'Old content!');
 
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->updateIfExists()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $destination);
 
@@ -105,7 +105,7 @@ class ClobberTest extends TestCase
 
         file_put_contents($destination, 'Old content!');
 
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->updateIfExists()
             ->download($this->serverUrl('/hello-world'), $destination);
 
@@ -119,7 +119,7 @@ class ClobberTest extends TestCase
         file_put_contents($this->storage.'/hello-world.txt', 'Old content!');
 
         try {
-            (new SimpleDownloader())
+            (new CurlDownloader())
                 ->updateIfExists()
                 ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage);
 

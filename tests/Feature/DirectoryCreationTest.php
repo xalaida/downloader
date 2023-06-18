@@ -3,7 +3,7 @@
 namespace Nevadskiy\Downloader\Tests\Feature;
 
 use Nevadskiy\Downloader\Exceptions\DirectoryMissingException;
-use Nevadskiy\Downloader\SimpleDownloader;
+use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Tests\TestCase;
 
 class DirectoryCreationTest extends TestCase
@@ -12,7 +12,7 @@ class DirectoryCreationTest extends TestCase
     public function it_throws_exception_when_destination_directory_is_missing()
     {
         try {
-            (new SimpleDownloader())
+            (new CurlDownloader())
                 ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
             static::fail(sprintf('Expected [%s] was not thrown.', DirectoryMissingException::class));
@@ -24,7 +24,7 @@ class DirectoryCreationTest extends TestCase
     /** @test */
     public function it_creates_destination_directory_when_it_is_missing()
     {
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->allowDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/hello-world.txt');
 
@@ -35,7 +35,7 @@ class DirectoryCreationTest extends TestCase
     /** @test */
     public function it_creates_destination_directory_recursively_when_it_is_missing()
     {
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/hello-world.txt');
 
@@ -46,7 +46,7 @@ class DirectoryCreationTest extends TestCase
     /** @test */
     public function it_assumes_last_path_segment_is_filename_when_destination_is_missing_directory()
     {
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26');
 
@@ -57,7 +57,7 @@ class DirectoryCreationTest extends TestCase
     /** @test */
     public function it_assumes_last_path_segment_is_directory_when_destination_ends_with_separator()
     {
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/');
 
@@ -68,7 +68,7 @@ class DirectoryCreationTest extends TestCase
     /** @test */
     public function it_assumes_last_path_segment_is_directory_when_destination_ends_with_separator_dot()
     {
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/.');
 
@@ -79,7 +79,7 @@ class DirectoryCreationTest extends TestCase
     /** @test */
     public function it_assumes_last_path_segment_is_filename_when_destination_ends_with_dot()
     {
-        $destination = (new SimpleDownloader())
+        $destination = (new CurlDownloader())
             ->allowRecursiveDirectoryCreation()
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26.');
 

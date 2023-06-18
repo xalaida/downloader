@@ -14,7 +14,7 @@ use Nevadskiy\Downloader\FilenameGenerator\Md5FilenameGenerator;
 use Nevadskiy\Downloader\FilenameGenerator\TempFilenameGenerator;
 use Throwable;
 
-class CurlDownloader
+class CurlDownloader implements Downloader
 {
     /**
      * Throw an exception if the file already exists.
@@ -220,11 +220,9 @@ class CurlDownloader
     }
 
     /**
-     * Download a file from the URL and save to the given path.
-     *
-     * @throws DownloaderException
+     * @inheritdoc
      */
-    public function download(string $url, string $destination): string
+    public function download(string $url, string $destination = null): string
     {
         [$directory, $path] = $this->parseDestination($destination);
 
@@ -232,7 +230,7 @@ class CurlDownloader
             $this->includeTimestamps($path);
         }
 
-        $tempPath = $directory . DIRECTORY_SEPARATOR . $this->tempFilenameGenerator->generate();
+        $tempPath = $directory . $this->tempFilenameGenerator->generate();
 
         try {
             $response = $this->newFile($tempPath, function ($file) use ($url) {
@@ -242,7 +240,7 @@ class CurlDownloader
             return $path;
         }
 
-        $path = $path ?: $directory . DIRECTORY_SEPARATOR . $this->guessFilename($response);
+        $path = $path ?: $directory . $this->guessFilename($response);
 
         $this->saveAs($tempPath, $path, $response);
 
@@ -252,8 +250,12 @@ class CurlDownloader
     /**
      * Parse destination to retrieve a directory and destination path.
      */
-    protected function parseDestination(string $destination): array
+    protected function parseDestination(string $destination = null): array
     {
+        if (is_null($destination)) {
+            return ['', null];
+        }
+
         if ($this->isDirectory($destination)) {
             $directory = rtrim($destination, DIRECTORY_SEPARATOR . '.');
             $path = null;
@@ -264,7 +266,7 @@ class CurlDownloader
 
         $this->makeDirectoryIfMissing($directory);
 
-        return [$directory, $path];
+        return [$directory . DIRECTORY_SEPARATOR, $path];
     }
 
     /**

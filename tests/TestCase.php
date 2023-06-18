@@ -49,6 +49,22 @@ class TestCase extends BaseTestCase
     }
 
     /**
+     * Execute the given callback with the specified working directory.
+     */
+    protected function withWorkingDirectory(string $workDir, callable $callback)
+    {
+        $original = getcwd();
+
+        chdir($workDir);
+
+        $result = $callback();
+
+        chdir($original);
+
+        return $result;
+    }
+
+    /**
      * Asserts that a directory is empty.
      */
     public static function assertDirectoryIsEmpty(string $directory, string $message = ''): void

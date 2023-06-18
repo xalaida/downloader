@@ -9,6 +9,19 @@ class DestinationTest extends TestCase
     /**
      * @test
      */
+    public function it_downloads_file_to_working_directory_when_destination_is_null(): void
+    {
+        $destination = $this->withWorkingDirectory($this->storage, function () {
+            return (new CurlDownloader())->download($this->url('/hello-world.txt'));
+        });
+
+        static::assertSame('hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/fixtures/hello-world.txt', $this->storage.'/hello-world.txt');
+    }
+
+    /**
+     * @test
+     */
     public function it_downloads_file_to_directory_that_ends_with_separator(): void
     {
         $destination = (new CurlDownloader())

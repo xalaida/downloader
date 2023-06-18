@@ -3,7 +3,7 @@
 namespace Nevadskiy\Downloader\Tests;
 
 use Nevadskiy\Downloader\CurlDownloader;
-use Nevadskiy\Downloader\Filename\FilenameGenerator;
+use Nevadskiy\Downloader\FilenameGenerator\FilenameGenerator;
 
 class FilenameTest extends TestCase
 {

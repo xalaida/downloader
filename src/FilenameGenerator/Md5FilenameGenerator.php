@@ -1,6 +1,6 @@
 <?php
 
-namespace Nevadskiy\Downloader\Filename;
+namespace Nevadskiy\Downloader\FilenameGenerator;
 
 class Md5FilenameGenerator implements FilenameGenerator
 {

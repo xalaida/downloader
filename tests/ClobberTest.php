@@ -6,7 +6,7 @@ use DateTime;
 use Nevadskiy\Downloader\CurlDownloader;
 use Nevadskiy\Downloader\Exceptions\DestinationFileMissingException;
 use Nevadskiy\Downloader\Exceptions\FileExistsException;
-use Nevadskiy\Downloader\Filename\FilenameGenerator;
+use Nevadskiy\Downloader\FilenameGenerator\FilenameGenerator;
 
 class ClobberTest extends TestCase
 {

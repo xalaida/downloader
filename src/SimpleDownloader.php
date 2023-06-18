@@ -234,13 +234,13 @@ class SimpleDownloader
      */
     public function download(string $url, string $destination): string
     {
-        list($dir, $path) = $this->parseDestination($destination);
+        list($directory, $path) = $this->parseDestination($destination);
 
         if ($this->clobbering === self::CLOBBERING_UPDATE) {
             $this->includeTimestamps($path);
         }
 
-        $tempPath = $dir . DIRECTORY_SEPARATOR . $this->tempFilenameGenerator->generate();
+        $tempPath = $directory . DIRECTORY_SEPARATOR . $this->tempFilenameGenerator->generate();
 
         try {
             $response = $this->newFile($tempPath, function ($file) use ($url) {
@@ -250,7 +250,7 @@ class SimpleDownloader
             return $path;
         }
 
-        $path = $path ?: $dir . DIRECTORY_SEPARATOR . $this->guessFilename($response);
+        $path = $path ?: $directory . DIRECTORY_SEPARATOR . $this->guessFilename($response);
 
         $this->saveAs($tempPath, $path, $response);
 
@@ -262,30 +262,40 @@ class SimpleDownloader
      */
     protected function parseDestination(string $destination): array
     {
-        if (is_dir($destination)) {
-            $dir = rtrim($destination, DIRECTORY_SEPARATOR . '.');
+        if ($this->isDirectory($destination)) {
+            $directory = rtrim($destination, DIRECTORY_SEPARATOR . '.');
             $path = null;
         } else {
-            $dir = dirname($destination);
+            $directory = dirname($destination);
             $path = $destination;
-
-            $this->makeDirectoryIfMissing($dir);
         }
 
-        return [$dir, $path];
+        $this->makeDirectoryIfMissing($directory);
+
+        return [$directory, $path];
+    }
+
+    /**
+     * Determine whether the destination path is a directory.
+     */
+    protected function isDirectory(string $destination): bool
+    {
+        return is_dir($destination)
+            || mb_substr($destination, -1) === DIRECTORY_SEPARATOR
+            || mb_substr($destination, -2) === DIRECTORY_SEPARATOR . '.';
     }
 
     /**
      * Make a destination directory if it is missing.
      */
-    protected function makeDirectoryIfMissing(string $dir)
+    protected function makeDirectoryIfMissing(string $directory)
     {
-        if (is_dir($dir)) {
+        if (is_dir($directory)) {
             return;
         }
 
-        if (! $this->makesDirectory || ! mkdir($dir, $this->directoryPermissions, $this->makesDirectoryRecursively)) {
-            throw DirectoryMissingException::from($dir);
+        if (! $this->makesDirectory || ! mkdir($directory, $this->directoryPermissions, $this->makesDirectoryRecursively)) {
+            throw DirectoryMissingException::from($directory);
         }
     }
 

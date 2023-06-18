@@ -8,8 +8,6 @@ use Nevadskiy\Downloader\Tests\TestCase;
 
 class DirectoryCreationTest extends TestCase
 {
-    // @todo test when destination path is $this->storage.'/files/2008/02/08' (not a file but missing directory)
-
     /** @test */
     public function it_throws_exception_when_destination_directory_is_missing()
     {
@@ -42,6 +40,50 @@ class DirectoryCreationTest extends TestCase
             ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/hello-world.txt');
 
         static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_assumes_last_path_segment_is_filename_when_destination_is_missing_directory()
+    {
+        $destination = (new SimpleDownloader())
+            ->allowRecursiveDirectoryCreation()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26');
+
+        static::assertSame($this->storage.'/files/2022/07/26', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_assumes_last_path_segment_is_directory_when_destination_ends_with_separator()
+    {
+        $destination = (new SimpleDownloader())
+            ->allowRecursiveDirectoryCreation()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/');
+
+        static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_assumes_last_path_segment_is_directory_when_destination_ends_with_separator_dot()
+    {
+        $destination = (new SimpleDownloader())
+            ->allowRecursiveDirectoryCreation()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26/.');
+
+        static::assertSame($this->storage.'/files/2022/07/26/hello-world.txt', $destination);
+        static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
+    }
+
+    /** @test */
+    public function it_assumes_last_path_segment_is_filename_when_destination_ends_with_dot()
+    {
+        $destination = (new SimpleDownloader())
+            ->allowRecursiveDirectoryCreation()
+            ->download($this->serverUrl('/fixtures/hello-world.txt'), $this->storage.'/files/2022/07/26.');
+
+        static::assertSame($this->storage.'/files/2022/07/26.', $destination);
         static::assertFileEquals(__DIR__.'/../server/fixtures/hello-world.txt', $destination);
     }
 }

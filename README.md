@@ -7,7 +7,7 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/nevadskiy/downloader)](https://packagist.org/packages/nevadskiy/downloader)
 [![License](https://img.shields.io/github/license/nevadskiy/downloader)](https://packagist.org/packages/nevadskiy/downloader)
 
-⬇️ Download files using PHP and Curl.
+⬇️ Download files using PHP and cURL.
 
 ## ✅ Requirements
 

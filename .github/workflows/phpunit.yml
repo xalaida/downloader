@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '16.x'
 
-      - name: Start testing server on Ubuntu OS
+      - name: Start testing server
         run: node tests/server.js &
 
       - name: Set up PHP

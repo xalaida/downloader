@@ -13,7 +13,7 @@
         "php": "^7.1|^8.0",
         "ext-curl": "*",
         "psr/log": "^1.0|^2.0|^3.0",
-        "symfony/mime": "^4.4"
+        "symfony/mime": "^4.4|^5.0|^6.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.0|^8.5.14",

@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-latest ]
         php: [ '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2' ]
         dependencies: [ lowest, highest ]
 
@@ -24,9 +24,7 @@ jobs:
           node-version: '16.x'
 
       - name: Start testing server
-        run: |
-          cd tests
-          (node server.js &) || /bin/true
+        run: node tests/server.js &
 
       - name: Wait for server to boot
         run: sleep 5

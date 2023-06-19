@@ -26,9 +26,6 @@ jobs:
       - name: Start testing server
         run: node tests/server.js &
 
-      - name: Wait for server to boot
-        run: sleep 5
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
